@@ -20,13 +20,13 @@
     extraConfig = {
       init.defaultBranch = "main";
 
-      #user.signing.key = "";
+      user.signing.key = "0x024E39A2037D1BBC";
 
       gpg.program = "${config.programs.gpg.package}/bin/gpg2";
 
       commit = {
         verbose = true;
-        #gpgSign = true;
+        gpgSign = true;
       };
     };
   };
