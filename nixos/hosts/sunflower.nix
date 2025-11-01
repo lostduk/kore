@@ -14,6 +14,7 @@
 
     usbip = {
       enable = true;
+      autoAttach = [ "1-14" ];
     };
   };
 
