@@ -1,0 +1,19 @@
+{ config, pkgs, ... }:
+
+{
+  home = {
+    username = "lostduk";
+    homeDirectory = "/home/lostduk";
+    stateVersion = "25.05";
+
+    sessionVariables = {
+      # Fuck Google
+      GOSUMDB = "off";
+      GOPROXY = "direct";
+      GOTELEMETRY = "off";
+      GOTOOLCHAIN = "local";
+    };
+
+    packages = with pkgs; [ pass ];
+  };
+}
