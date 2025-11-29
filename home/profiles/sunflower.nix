@@ -4,6 +4,7 @@
     ../features/cli/git.nix
     ../features/cli/nvim.nix
     ../features/cli/bash.nix
+    ../features/cli/tmux.nix
 
     ../features/misc/xdg.nix
   ];
