@@ -4,7 +4,7 @@
   home = {
     username = "lostduk";
     homeDirectory = "/home/lostduk";
-    stateVersion = "25.05";
+    stateVersion = "25.11";
 
     sessionVariables = {
       # Fuck Google
