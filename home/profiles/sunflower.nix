@@ -4,6 +4,8 @@
     ../features/cli/git.nix
     ../features/cli/nvim.nix
     ../features/cli/bash.nix
+
+    ../features/misc/xdg.nix
   ];
 
   # TMP: neovim suck tbh but it work
