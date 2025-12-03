@@ -19,8 +19,13 @@
     packages = with pkgs; [ firefox pass goofcord ];
 
     persistence."/persist/home/lostduk" = {
-      directories = [ "documents" ".config/goofcord" ".mozilla" ".gnupg" ];
       allowOther = true;
+      directories = [
+        "documents"
+        ".mozilla" 
+        ".config/goofcord" 
+        ".password-store"
+      ];
     };
   };
 }
