@@ -16,10 +16,10 @@
       GOTOOLCHAIN = "local";
     };
 
-    packages = with pkgs; [ pass vesktop ];
+    packages = with pkgs; [ firefox pass goofcord ];
 
     persistence."/persist/home/lostduk" = {
-      directories = [ "documents" ".config/vesktop" ".mozilla" ".gnupg" ];
+      directories = [ "documents" ".config/goofcord" ".mozilla" ".gnupg" ];
       allowOther = true;
     };
   };
