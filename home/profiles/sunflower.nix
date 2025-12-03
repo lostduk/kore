@@ -1,6 +1,7 @@
 {
   imports = [
     ../features/cli/gpg.nix
+    ../features/cli/ssh.nix
     ../features/cli/git.nix
     ../features/cli/nvim.nix
     ../features/cli/bash.nix
