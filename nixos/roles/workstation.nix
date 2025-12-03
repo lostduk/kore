@@ -15,6 +15,11 @@ in {
       users.lostduk = outputs.homeConfigurations.${config.networking.hostName};
     };
 
+    environment.etc."fuse.conf".text = ''
+      user_allow_other
+      mount_max = 1000
+    '';
+
     xdg.portal = {
       enable = true;
       extraPortals = [ pkgs.xdg-desktop-portal-wlr ];

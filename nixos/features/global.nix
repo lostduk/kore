@@ -70,7 +70,7 @@
 
     audit = {
       enable = true;
-      rules = [ "-a exit,always, -F arch=b64 -S execve" ];
+      rules = [ "-a exit,always -F arch=b64 -S execve" ];
     };
 
     sudo = {
