@@ -1,6 +1,8 @@
-{ inputs, outputs, lib, pkgs, ... }:
+{ inputs, outputs, config, lib, pkgs, ... }:
 
 {
+  imports = [ inputs.impermanence.nixosModules.impermanence ];
+
   i18n.defaultLocale = "en_US.UTF-8";
   time.timeZone = "UTC";
 
@@ -86,5 +88,60 @@
     users.root.hashedPassword = lib.mkForce "!";
   };
 
-  environment.defaultPackages = lib.mkForce [];
+  environment = {
+    defaultPackages = lib.mkForce [];
+
+    persistence."/persist" = {
+      hideMounts = false;
+
+      directories = [
+        "/srv"
+        "/var/lib/nixos"
+        "/var/lib/systemd"
+      ];
+    };
+  };
+
+  boot.initrd = let
+    rootDevice = config.fileSystems."/".device;
+    systemdStage1 = config.boot.initrd.systemd.enable;
+    # TODO: Delete old root, but I can't get this to work since something
+    # is wrong. In the "Creating a new root" part, our root is not /@, but it's
+    # /@_(date) I'm not sure why. Maybe it works as intended since i wrote this
+    # a long, long time ago.
+    script = ''
+      echo "Mounting..."
+      mkdir -p /tmp
+      MNTPOINT=$(mktemp -d)
+      (
+        mount ${rootDevice} "$MNTPOINT"
+        trap 'umount "$MNTPOINT"' EXIT
+
+        echo "Creating a new root..."
+        mv "$MNTPOINT/@" "$MNTPOINT/@_$(date "+%Y-%m-%-d_%H:%M:%S")"
+
+        echo "Creating a blank subvolume..."
+        btrfs sub cre "$MNTPOINT/@"
+      )
+    '';
+  in {
+    supportedFilesystems = [ "btrfs" ];
+    postDeviceCommands = lib.mkIf (!systemdStage1) (lib.mkBefore script);
+
+    systemd.services.wipe-root = lib.mkIf (systemdStage1) {
+      description = "Wipe root";
+      wantedBy = [ "initrd.target" ];
+      requires = [ "dev-mapper-crypted.device" ];
+      before = [ "sysroot.mount" ];
+      after = [
+        "dev-mapper-crypted.device"
+        "systemd-cryptsetup@crypted.service"
+      ];
+      unitConfig.DefaultDependencies = "no";
+      serviceConfig.type = "oneshot";
+      script = script;
+    };
+  };
+
+  fileSystems."/persist".neededForBoot = true;
 }

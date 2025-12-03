@@ -1,10 +1,11 @@
 {
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    impermanence.url = "github:nix-community/impermanence";
 
-    nixos-wsl.url = "github:nix-community/NixOS-WSL";
-    nixos-wsl.inputs.nixpkgs.follows = "nixpkgs";
-    
+    disko.url = "github:nix-community/disko";
+    disko.inputs.nixpkgs.follows = "nixpkgs";
+
     home-manager.url = "sourcehut:~rycee/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };

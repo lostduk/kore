@@ -1,6 +1,8 @@
-{ config, pkgs, ... }:
+{ inputs, config, pkgs, ... }:
 
 {
+  imports = [ inputs.impermanence.nixosModules.home-manager.impermanence ];
+
   home = {
     username = "lostduk";
     homeDirectory = "/home/lostduk";
@@ -14,6 +16,11 @@
       GOTOOLCHAIN = "local";
     };
 
-    packages = with pkgs; [ pass ];
+    packages = with pkgs; [ pass vesktop ];
+
+    persistence."/persist/home/lostduk" = {
+      directories = [ "documents" ".config/vesktop" ".mozilla" ".gnupg" ];
+      allowOther = true;
+    };
   };
 }
