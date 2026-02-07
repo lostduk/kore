@@ -13,14 +13,4 @@
       )
       inputs;
   };
-
-  modifications = final: prev: {
-    dwl = prev.dwl.overrideAttrs (oldAttrs: {
-      enableXWayland = true;
-      
-      postPatch = ''
-        cp ${./dwl_config.h} config.h
-      '';
-    });
-  };
 }

@@ -1,8 +1,6 @@
-{ inputs, config, pkgs, ... }:
+{ config, pkgs, ... }:
 
 {
-  imports = [ inputs.impermanence.nixosModules.home-manager.impermanence ];
-
   home = {
     username = "lostduk";
     homeDirectory = "/home/lostduk";
@@ -16,16 +14,6 @@
       GOTOOLCHAIN = "local";
     };
 
-    packages = with pkgs; [ firefox pass goofcord ];
-
-    persistence."/persist/home/lostduk" = {
-      allowOther = true;
-      directories = [
-        "documents"
-        ".mozilla" 
-        ".config/goofcord" 
-        ".password-store"
-      ];
-    };
+    packages = with pkgs; [ pass ];
   };
 }
