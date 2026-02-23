@@ -6,6 +6,7 @@
     ../features/cli/nvim.nix
     ../features/cli/bash.nix
     ../features/cli/tmux.nix
+    ../features/cli/claude.nix
 
     ../features/misc/xdg.nix
   ];

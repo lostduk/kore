@@ -15,6 +15,10 @@ in {
       users.lostduk = outputs.homeConfigurations.${config.networking.hostName};
     };
 
+    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "claude-code"
+    ];
+
     systemd.services.wipe-trash = {
       restartIfChanged = false;
       wantedBy = [ "multi-user.target" ];
