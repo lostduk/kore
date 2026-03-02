@@ -113,15 +113,19 @@
         mount ${rootDevice} "$MNTPOINT"
         trap 'umount "$MNTPOINT"' EXIT
 
-        echo "Moving old root..."
-        mv "$MNTPOINT/@" "$MNTPOINT/@_old"
+        if [[ -e $MNTPOINT/@ ]]; then
+          echo "Backing up root..."
+          mkdir -p $MNTPOINT/old_roots
+          mv "$MNTPOINT/@" "$MNTPOINT/old_roots/@_$(date "+%Y-%m-%-d_%H:%M:%S")"
+        fi
 
-        echo "Creating a blank root subvolume..."
+        echo "Deleting 7+ days old roots..."
+        find "$MNTPOINT/old_roots" -mindepth 1 -maxdepth 1 \
+          -mtime +7 \
+          -exec btrfs sub del -R {} +
+
+        echo "Creating new root..."
         btrfs sub cre "$MNTPOINT/@"
-
-        echo "Cleaning old root..."
-        btrfs sub del -R "$MNTPOINT/@_old"
-        rm -rf "$MNTPOINT/@_old"
       )
     '';
   in {
