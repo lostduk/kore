@@ -15,10 +15,6 @@ in {
       users.lostduk = outputs.homeConfigurations.${config.networking.hostName};
     };
 
-    nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-      "claude-code"
-    ];
-
     systemd.services.wipe-trash = {
       restartIfChanged = false;
       wantedBy = [ "multi-user.target" ];
@@ -26,11 +22,20 @@ in {
         Type = "oneshot";
         RemainAfterExit = true;
         ExecStart = pkgs.writeShellScript "" ''
+          set -e
+
           find '/home/lostduk' -mindepth 1 -maxdepth 1 \
             ! -name 'documents' \
             ! -name '.gnupg' \
             ! -name '.password-store' \
+            ! -name '.config' \
             -exec rm -r {} +
+
+          if [ -d /home/lostduk/.config ]; then
+            find /home/lostduk/.config -mindepth 1 -maxdepth 1 \
+              ! -name 'opencode' \
+              -exec rm -r {} +
+          fi
         '';
       };
     };
