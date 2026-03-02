@@ -5,9 +5,7 @@
 
     settings = {
       # go fuck ur self
-      formatter = {
-        disabled = true;
-      };
+      #formatter = "false";
       permission = {
         webfetch = "ask";
         read = {

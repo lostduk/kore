@@ -24,16 +24,30 @@ in {
         ExecStart = pkgs.writeShellScript "" ''
           set -e
 
-          find '/home/lostduk' -mindepth 1 -maxdepth 1 \
+          TARGET="/home/lostduk"
+
+          find "$TARGET" -mindepth 1 -maxdepth 1 \
             ! -name 'documents' \
             ! -name '.gnupg' \
             ! -name '.password-store' \
-            ! -name '.config' \
+            ! -name '.local' \
             -exec rm -r {} +
 
-          if [ -d /home/lostduk/.config ]; then
-            find /home/lostduk/.config -mindepth 1 -maxdepth 1 \
+          if [ -d "$TARGET/.local" ]; then
+            find "$TARGET/.local" -mindepth 1 -maxdepth 1 \
+              ! -name 'share' \
+              -exec rm -r {} +
+          fi
+
+          if [ -d "$TARGET/.local/share" ]; then
+            find "$TARGET/.local/share" -mindepth 1 -maxdepth 1 \
               ! -name 'opencode' \
+              -exec rm -r {} +
+          fi
+
+          if [ -d "$TARGET/.local/share/opencode" ]; then
+            find "$TARGET/.local/share/opencode" -mindepth 1 -maxdepth 1 \
+              ! -name 'auth.json' \
               -exec rm -r {} +
           fi
         '';
