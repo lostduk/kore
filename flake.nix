@@ -1,5 +1,6 @@
 {
   inputs = {
+    # system
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     impermanence.url = "github:nix-community/impermanence";
 
@@ -8,6 +9,10 @@
     
     home-manager.url = "sourcehut:~rycee/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
+
+    # misc
+    llm-agents.url = "github:numtide/llm-agents.nix";
+    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
