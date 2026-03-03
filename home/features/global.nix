@@ -14,16 +14,13 @@
       GOTOOLCHAIN = "local";
     };
 
-    packages = with pkgs; [ pass vesktop ];
+    packages = with pkgs; [ pass ];
 
-    persistence."/persist" = {
-      directories = [
-        "documents"
-        ".mozilla"
-        ".gnupg"
-        ".password-store"
-        ".config/vesktop"
-      ];
-    };
+    persistence."/persist".directories = [
+      "documents"
+      ".mozilla"
+      ".gnupg"
+      ".password-store"
+    ];
   };
 }

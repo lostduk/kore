@@ -9,6 +9,7 @@
 #    ../features/cli/opencode.nix
 
     ../features/misc/xdg.nix
+    ../features/misc/vesktop.nix
 
     ../features/wayland/dwl.nix
     ../features/wayland/foot.nix
