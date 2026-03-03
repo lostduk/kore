@@ -17,9 +17,6 @@
     packages = with pkgs; [ pass vesktop ];
 
     persistence."/persist" = {
-      files = [
-        ".local/share/opencode/auth.json"
-      ];
       directories = [
         "documents"
         ".mozilla"
