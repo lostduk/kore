@@ -19,7 +19,6 @@
     persistence."/persist".directories = [
       "documents"
       ".mozilla"
-      ".gnupg"
       ".password-store"
     ];
   };
