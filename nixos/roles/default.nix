@@ -1,5 +1,6 @@
 {
   imports = [
-    ./workstation.nix
+    ./home.nix
+    ./desktop.nix
   ];
 }

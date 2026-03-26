@@ -18,4 +18,5 @@ let
   };
 in {
   sunflower = mkSystem "x86_64-linux" "sunflower";
+  gomphrena = mkSystem "x86_64-linux" "gomphrena";
 }

@@ -128,7 +128,7 @@
         btrfs sub cre "$MNTPOINT/@"
       )
     '';
-  in {
+  in lib.mkIf (config ? "disko" && config.disko.devices.disk ? "main") ({
     supportedFilesystems = [ "btrfs" ];
     postDeviceCommands = lib.mkIf (!systemdStage1) (lib.mkBefore script);
 
@@ -144,7 +144,7 @@
       };
       script = script;
     };
-  };
+  });
 
   fileSystems."/persist".neededForBoot = true;
 }

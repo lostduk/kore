@@ -31,7 +31,11 @@ in {
       hosts = {
         sunflower = {
           ipv4 = "0.0.0.0";
-          roles = [ "workstation" ];
+          roles = [ "home" "workstation" ];
+        };
+        gomphrena = {
+          ipv4 = "0.0.0.0";
+          roles = [ "home" ];
         };
       };
       currentHost = config.kore.hosts.${config.networking.hostName};

@@ -8,4 +8,5 @@ let
   };
 in {
   sunflower = mkProfile "sunflower";
+  gomphrena = mkProfile "gomphrena";
 }

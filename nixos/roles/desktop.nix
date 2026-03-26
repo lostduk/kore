@@ -1,22 +1,10 @@
-{ inputs, outputs, config, pkgs, lib, ... }:
+{ outputs, config, pkgs, lib, ... }:
 
 let
-  roleName = "workstation";
+  roleName = "desktop";
   roleEnabled = lib.elem roleName config.kore.currentHost.roles;
 in {
-  imports = [ inputs.home-manager.nixosModules.home-manager  ];
-
   config = lib.mkMerge [{} (lib.mkIf roleEnabled {
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      extraSpecialArgs = { inherit inputs outputs; };
-
-      users.lostduk = outputs.homeConfigurations.${config.networking.hostName};
-    };
-
-    programs.fuse.userAllowOther = true;
-
     xdg.portal = {
       enable = true;
       extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
