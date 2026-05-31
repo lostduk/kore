@@ -2,7 +2,6 @@
 
 {
   imports = [
-    ../features/cli/pi.nix
     ../features/cli/gpg.nix
     ../features/cli/ssh.nix
     ../features/cli/git.nix
