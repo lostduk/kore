@@ -3,8 +3,17 @@
 {
   imports = [ inputs.impermanence.nixosModules.impermanence ];
 
-  i18n.defaultLocale = "en_US.UTF-8";
+  i18n = {
+    defaultLocale = "en_US.UTF-8";
+    supportedLocales = [ "en_US.UTF-8/UTF-8" ];
+  };
   time.timeZone = "UTC";
+
+  documentation = {
+    nixos.enable = false;
+    doc.enable = false;
+    info.enable = false;
+  };
 
   nix = {
     package = pkgs.nixVersions.latest;
@@ -32,6 +41,14 @@
       allowUnfree = lib.mkForce false;
       allowBroken = lib.mkForce false;
     };
+  };
+
+  system.tools = {
+    nixos-build-vms.enable = false;
+    nixos-enter.enable = false;
+    nixos-generate-config.enable = false;
+    nixos-install.enable = false;
+    nixos-option.enable = false;
   };
 
   networking = {
@@ -101,6 +118,8 @@
       ];
     };
   };
+
+  programs.nano.enable = false;
 
   boot.initrd = let
     rootDevice = config.fileSystems."/".device;
