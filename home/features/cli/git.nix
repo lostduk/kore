@@ -7,6 +7,12 @@
     userName = "lostduk";
     userEmail = "hi@lostduk.com";
 
+    ignores = [
+      "CLAUDE.md"
+      ".claude/"
+      "**/.claude/settings.local.json"
+    ];
+
     aliases = {
       l = "log --oneline";
       lg = "log --oneline --decorate --graph";

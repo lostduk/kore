@@ -7,6 +7,10 @@ in {
   imports = [ inputs.home-manager.nixosModules.home-manager  ];
 
   config = lib.mkMerge [{} (lib.mkIf roleEnabled {
+      nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+      "claude-code"
+      ];
+
     home-manager = {
       useGlobalPkgs = true;
       useUserPackages = true;
