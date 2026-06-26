@@ -1,3 +1,5 @@
+{ kore }:
+
 let
   mkProfile = hostname: {...}: {
     imports = [
@@ -6,7 +8,4 @@ let
       (./. + "/${hostname}.nix")
     ];
   };
-in {
-  sunflower = mkProfile "sunflower";
-  gomphrena = mkProfile "gomphrena";
-}
+in builtins.mapAttrs (hostname: _: mkProfile hostname) kore.hosts

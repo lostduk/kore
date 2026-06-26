@@ -18,9 +18,10 @@
     let
       inherit (self) outputs;
       lib = nixpkgs.lib // home-manager.lib;
+      kore = builtins.fromJSON (builtins.readFile ./kore.json);
     in {
-      nixosConfigurations = import ./nixos/hosts { inherit inputs outputs lib; };
-      homeConfigurations = import ./home/profiles;
+      nixosConfigurations = import ./nixos/hosts { inherit inputs outputs lib kore; };
+      homeConfigurations = import ./home/profiles { inherit kore; };
 
       overlays = import ./overlays { inherit inputs outputs; };
     };

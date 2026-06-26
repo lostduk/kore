@@ -1,44 +1,43 @@
-{ config, lib, ... }:
+{ config, lib, kore, ... }:
 
 let
   hostOptions = with lib; {
-    ipv4 = mkOption {
+    system = mkOption {
       type = types.str;
+    };
+    ipv4 = mkOption {
+      type = types.nullOr types.str;
       default = null;
     };
     roles = mkOption {
-      type = types.nullOr (types.listOf types.str);
-      default = null;
+      type = types.listOf types.str;
+      default = [];
     };
   };
 in {
   options.kore = with lib; {
     hosts = mkOption {
       type = types.attrsOf (types.submodule [{ options = hostOptions; }]);
-      default = null;
+      default = {};
     };
     currentHost = mkOption {
       type = types.submodule [{ options = hostOptions; }];
-      default = null;
     };
   };
   config = {
-    warnings = lib.optional (!(config.kore.hosts ? ${config.networking.hostName}))
+    warnings = lib.optional (!(kore.hosts ? ${config.networking.hostName}))
       "no configuration for ${config.networking.hostName} found";
 
-    # TMP
     kore = {
-      hosts = {
-        sunflower = {
-          ipv4 = "0.0.0.0";
-          roles = [ "home" "workstation" ];
-        };
-        gomphrena = {
-          ipv4 = "0.0.0.0";
-          roles = [ "home" ];
-        };
-      };
-      currentHost = config.kore.hosts.${config.networking.hostName};
+      hosts = kore.hosts;
+      currentHost = kore.hosts.${config.networking.hostName};
     };
+
+    # /etc/hosts so machines resolve each other by name; placeholder
+    # 0.0.0.0 addresses are skipped.
+    networking.hosts = lib.mkMerge (lib.mapAttrsToList (name: host:
+      lib.optionalAttrs (host.ipv4 != null && host.ipv4 != "0.0.0.0") {
+        "${host.ipv4}" = [ "${name}.${config.networking.domain}" name ];
+      }) kore.hosts);
   };
 }

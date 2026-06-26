@@ -1,9 +1,9 @@
-{ inputs, outputs, lib, ... }:
+{ inputs, outputs, lib, kore, ... }:
 
 let
-  mkSystem = system: hostname: lib.nixosSystem {
-    system = system;
-    specialArgs = { inherit inputs outputs; };
+  mkSystem = hostname: host: lib.nixosSystem {
+    system = host.system;
+    specialArgs = { inherit inputs outputs kore; };
     modules = [
       ../features/global.nix
       ../features/kore.nix
@@ -16,7 +16,4 @@ let
       { system.stateVersion = "25.11"; }
     ];
   };
-in {
-  sunflower = mkSystem "x86_64-linux" "sunflower";
-  gomphrena = mkSystem "x86_64-linux" "gomphrena";
-}
+in lib.mapAttrs mkSystem kore.hosts

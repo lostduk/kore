@@ -1,0 +1,14 @@
+{
+  "hosts": {
+    "sunflower": {
+      "system": "x86_64-linux",
+      "roles": ["home", "desktop"],
+      "ipv4": "0.0.0.0"
+    },
+    "gomphrena": {
+      "system": "x86_64-linux",
+      "roles": ["home"],
+      "ipv4": "0.0.0.0"
+    }
+  }
+}
