@@ -79,7 +79,7 @@
     };
 
     auditd.enable = true;
-    pam.enableSSHAgentAuth = true;
+    pam.sshAgentAuth.enable = true;
   };
 
   users = {

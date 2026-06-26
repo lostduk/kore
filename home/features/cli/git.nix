@@ -4,29 +4,31 @@
   programs.git = {
     enable = true;
 
-    userName = "lostduk";
-    userEmail = "hi@lostduk.com";
-
     ignores = [
       "CLAUDE.md"
       ".claude/"
       "**/.claude/settings.local.json"
     ];
 
-    aliases = {
-      l = "log --oneline";
-      lg = "log --oneline --decorate --graph";
+    settings = {
+      user = {
+        name = "lostduk";
+        email = "hi@lostduk.com";
 
-      s = "status";
+        signing.key = "0x024E39A2037D1BBC";
+      };
 
-      fuck = "reset --hard";
-      shit = "reset --soft";
-    };
+      alias = {
+        l = "log --oneline";
+        lg = "log --oneline --decorate --graph";
 
-    extraConfig = {
+        s = "status";
+
+        fuck = "reset --hard";
+        shit = "reset --soft";
+      };
+
       init.defaultBranch = "main";
-
-      user.signing.key = "0x024E39A2037D1BBC";
 
       gpg.program = "${config.programs.gpg.package}/bin/gpg2";
 
