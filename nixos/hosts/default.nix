@@ -13,7 +13,7 @@ let
       (./. + "/${hostname}.nix")
 
       { networking.hostName = "${hostname}"; }
-      { system.stateVersion = "25.11"; }
+      { system.stateVersion = "26.11"; }
     ];
   };
 in lib.mapAttrs mkSystem kore.hosts
