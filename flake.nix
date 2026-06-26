@@ -12,10 +12,6 @@
     
     home-manager.url = "sourcehut:~rycee/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
-
-    # misc
-    llm-agents.url = "github:numtide/llm-agents.nix";
-    llm-agents.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = inputs@{ self, nixpkgs, home-manager, ... }:
