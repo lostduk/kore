@@ -24,6 +24,11 @@
         HostName = "github.com";
         User = "git";
       };
+
+      ld = {
+        HostName = "git.lostduk.com";
+        User = "git";
+      };
     };
   };
 }
