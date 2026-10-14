@@ -77,6 +77,10 @@ let
       type = types.nullOr types.str;
       default = null;
     };
+    mirror = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
   };
 
   hostNames = name: host:

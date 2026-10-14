@@ -25,7 +25,8 @@
   "repos": {
     "kore": {
       "write": ["lostduk"],
-      "description": "my public infrastructure monorepo"
+      "description": "my public infrastructure monorepo",
+      "mirror": "git@github.com:lostduk/kore.git"
     },
     "greenhouse": {
       "write": ["lostduk"],
