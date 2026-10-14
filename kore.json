@@ -16,7 +16,7 @@
     "iris": {
       "system": "x86_64-linux",
       "stateVersion": "26.11",
-      "roles": [],
+      "roles": ["web"],
       "users": ["lostduk"],
       "ipv4": "82.153.138.53"
     }

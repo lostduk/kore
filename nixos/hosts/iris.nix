@@ -9,7 +9,6 @@ in {
     ( modulesPath + "/profiles/qemu-guest.nix" )
   ];
 
-  # Kyun hands out a /32 with an off-subnet gateway; pin it instead of DHCP.
   networking = {
     useDHCP = false;
     nameservers = [ "9.9.9.9" "149.112.112.112" ];

@@ -95,7 +95,6 @@ in {
       password = "tmp";
       extraGroups = [ "wheel" ];
 
-      # Only hosts with the home role get home folders.
       createHome = hasHome;
       home = if hasHome then "/home/${user}" else "/var/empty";
 
