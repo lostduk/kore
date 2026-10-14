@@ -1,7 +1,5 @@
 { inputs, outputs, config, lib, pkgs, utils, modulesPath, ... }:
 
-# Policy for every host. Values under mkForce are invariants: roles and
-# hosts must not weaken them.
 let
   impermanence = config.kore.impermanence.enable;
   rollback = impermanence && config ? disko && config.disko.devices.disk ? main;
@@ -65,7 +63,7 @@ in {
   networking = {
     domain = "lostduk.com";
 
-    useDHCP = true;
+    useDHCP = lib.mkDefault true;
     enableIPv6 = lib.mkForce false;
 
     firewall = {

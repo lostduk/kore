@@ -11,7 +11,7 @@
         ForwardAgent = false;
         AddKeysToAgent = "no";
         Compression = false;
-        ServerAliveInterval = 0;
+        ServerAliveInterval = 30;
         ServerAliveCountMax = 3;
         HashKnownHosts = false;
         UserKnownHostsFile = "~/.ssh/known_hosts";

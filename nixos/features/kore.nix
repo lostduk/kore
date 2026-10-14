@@ -3,6 +3,8 @@
 let
   cfg = config.kore;
   hostname = config.networking.hostName;
+  hasHome = lib.elem "home" cfg.currentHost.roles;
+  hostKey = name: ../../keys/hosts + "/${name}.pub";
 
   identityOptions = { name, ... }:
     let
@@ -93,6 +95,10 @@ in {
       password = "tmp";
       extraGroups = [ "wheel" ];
 
+      # Only hosts with the home role get home folders.
+      createHome = hasHome;
+      home = if hasHome then "/home/${user}" else "/var/empty";
+
       subUidRanges = [{ startUid = 100000 + i * 65536; count = 65536; }];
       subGidRanges = [{ startGid = 100000 + i * 65536; count = 65536; }];
 
@@ -104,5 +110,11 @@ in {
       lib.optionalAttrs (host.ipv4 != null) {
         "${host.ipv4}" = [ "${name}.${config.networking.domain}" name ];
       }) cfg.hosts);
+
+    programs.ssh.knownHosts = lib.mapAttrs (name: host: {
+      hostNames = [ name "${name}.${config.networking.domain}" ]
+        ++ lib.optional (host.ipv4 != null) host.ipv4;
+      publicKeyFile = hostKey name;
+    }) (lib.filterAttrs (name: _: builtins.pathExists (hostKey name)) cfg.hosts);
   };
 }
