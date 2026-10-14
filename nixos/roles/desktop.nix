@@ -1,15 +1,22 @@
 { pkgs, ... }:
 
 {
-  xdg.portal = {
-    enable = true;
-    extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
-    configPackages = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
+  xdg = {
+    autostart.enable = true;
+    icons.enable = true;
+    mime.enable = true;
+    sounds.enable = true;
 
-    wlr.enable = true;
+    portal = {
+      enable = true;
+      extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
+      configPackages = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
 
-    config.common = {
-      default = [ "wlr" ];
+      wlr.enable = true;
+
+      config.common = {
+        default = [ "wlr" ];
+      };
     };
   };
 

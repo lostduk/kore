@@ -1,6 +1,9 @@
 { osConfig, pkgs, ... }:
 
 {
+  programs.man.enable = false;
+  manual.manpages.enable = false;
+
   home = {
     stateVersion = osConfig.system.stateVersion;
 

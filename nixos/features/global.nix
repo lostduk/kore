@@ -1,4 +1,4 @@
-{ inputs, outputs, config, lib, pkgs, utils, ... }:
+{ inputs, outputs, config, lib, pkgs, utils, modulesPath, ... }:
 
 # Policy for every host. Values under mkForce are invariants: roles and
 # hosts must not weaken them.
@@ -9,19 +9,17 @@ let
   rootDevice = config.fileSystems."/".device;
   rootUnit = "${utils.escapeSystemdPath rootDevice}.device";
 in {
-  imports = [ inputs.impermanence.nixosModules.impermanence ];
+  imports = [
+    inputs.impermanence.nixosModules.impermanence
+
+    ( modulesPath + "/profiles/minimal.nix" )
+  ];
 
   i18n = {
     defaultLocale = "en_US.UTF-8";
     supportedLocales = [ "en_US.UTF-8/UTF-8" ];
   };
   time.timeZone = "UTC";
-
-  documentation = {
-    nixos.enable = false;
-    doc.enable = false;
-    info.enable = false;
-  };
 
   nix = {
     package = pkgs.nixVersions.latest;
@@ -44,6 +42,11 @@ in {
 
   nixpkgs = {
     overlays = builtins.attrValues outputs.overlays;
+
+    flake = {
+      setFlakeRegistry = false;
+      setNixPath = false;
+    };
 
     config = {
       allowUnfree = lib.mkForce false;
