@@ -1,14 +1,17 @@
 {
+  "identities": {
+    "lostduk": {
+      "email": "hi@lostduk.com",
+      "gpg": "0x024E39A2037D1BBC"
+    }
+  },
   "hosts": {
-    "sunflower": {
-      "system": "x86_64-linux",
-      "roles": ["home", "desktop"],
-      "ipv4": "0.0.0.0"
-    },
     "gomphrena": {
       "system": "x86_64-linux",
+      "stateVersion": "26.11",
       "roles": ["home"],
-      "ipv4": "0.0.0.0"
+      "users": ["lostduk"],
+      "ipv4": null
     }
   }
 }

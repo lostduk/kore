@@ -14,14 +14,16 @@
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = inputs@{ self, nixpkgs, home-manager, ... }:
+  outputs = inputs@{ self, nixpkgs, ... }:
     let
       inherit (self) outputs;
-      lib = nixpkgs.lib // home-manager.lib;
-      kore = builtins.fromJSON (builtins.readFile ./kore.json);
+      inherit (nixpkgs) lib;
+      kore = lib.importJSON ./kore.json;
     in {
+      inherit kore;
+
       nixosConfigurations = import ./nixos/hosts { inherit inputs outputs lib kore; };
-      homeConfigurations = import ./home/profiles { inherit kore; };
+      homeModules = import ./home/profiles { inherit kore; };
 
       overlays = import ./overlays { inherit inputs outputs; };
     };

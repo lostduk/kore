@@ -1,6 +1,8 @@
-{ config, ... }:
+{ config, osConfig, ... }:
 
-{
+let
+  identity = osConfig.kore.identities.${config.home.username};
+in {
   programs.git = {
     enable = true;
 
@@ -12,10 +14,10 @@
 
     settings = {
       user = {
-        name = "lostduk";
-        email = "hi@lostduk.com";
+        name = config.home.username;
+        email = identity.email;
 
-        signing.key = "0x024E39A2037D1BBC";
+        signing.key = identity.gpg;
       };
 
       alias = {

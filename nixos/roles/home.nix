@@ -1,25 +1,20 @@
-{ inputs, outputs, config, pkgs, lib, ... }:
+{ inputs, outputs, config, lib, ... }:
 
-let
-  roleName = "home";
-  roleEnabled = lib.elem roleName config.kore.currentHost.roles;
-in {
-  imports = [ inputs.home-manager.nixosModules.home-manager  ];
+{
+  imports = [ inputs.home-manager.nixosModules.home-manager ];
 
-  config = lib.mkMerge [{} (lib.mkIf roleEnabled {
-      nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-      "claude-code"
-      ];
+  nixpkgs.config.allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
+    "claude-code"
+  ];
 
-    home-manager = {
-      useGlobalPkgs = true;
-      useUserPackages = true;
-      extraSpecialArgs = { inherit inputs outputs; };
+  home-manager = {
+    useGlobalPkgs = true;
+    useUserPackages = true;
+    extraSpecialArgs = { inherit inputs outputs; };
 
-      users.lostduk = outputs.homeConfigurations.${config.networking.hostName};
-    };
+    users = lib.genAttrs config.kore.currentHost.users
+      (_: outputs.homeModules.${config.networking.hostName});
+  };
 
-    programs.fuse.userAllowOther = true;
-  })];
+  programs.fuse.userAllowOther = true;
 }
-

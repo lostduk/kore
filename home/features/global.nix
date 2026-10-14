@@ -1,10 +1,8 @@
-{ config, pkgs, ... }:
+{ osConfig, pkgs, ... }:
 
 {
   home = {
-    username = "lostduk";
-    homeDirectory = "/home/lostduk";
-    stateVersion = "26.11";
+    stateVersion = osConfig.system.stateVersion;
 
     sessionVariables = {
       # Fuck Google
@@ -16,10 +14,14 @@
 
     packages = with pkgs; [ pass ];
 
-    persistence."/persist".directories = [
-      "documents"
-      ".mozilla"
-      ".password-store"
-    ];
+    persistence."/persist" = {
+      enable = osConfig.kore.impermanence.enable;
+
+      directories = [
+        "documents"
+        ".mozilla"
+        ".password-store"
+      ];
+    };
   };
 }

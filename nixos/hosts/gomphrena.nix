@@ -1,11 +1,10 @@
-{ lib, pkgs, inputs, modulesPath, ... }:
+{ inputs, ... }:
 
 {
-  imports = [
-    inputs.nixos-wsl.nixosModules.default
+  imports = [ inputs.nixos-wsl.nixosModules.default ];
 
-    ( modulesPath + "/installer/scan/not-detected.nix" )
-  ];
+  # WSL can't mount /persist at boot.
+  kore.impermanence.enable = false;
 
   wsl = {
     enable = true;
@@ -18,24 +17,8 @@
     };
   };
 
-  users.users.lostduk = {
-    password = "tmp";
-    isNormalUser = true;
-
-    extraGroups = [ "wheel" ];
-    subUidRanges = [{ startUid = 100000; count = 65536; }];
-    subGidRanges = [{ startGid = 100000; count = 65536; }];
-  };
-
   hardware = {
     graphics.enable = true;
     cpu.intel.updateMicrocode = true;
-  };
-
-  environment.persistence."/persist" = lib.mkForce {};
-
-  fileSystems."/persist" = {
-    enable = lib.mkForce false;
-    neededForBoot = lib.mkForce false;
   };
 }

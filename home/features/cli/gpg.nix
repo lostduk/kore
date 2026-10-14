@@ -1,6 +1,8 @@
-{ pkgs, config, lib, ... }:
+{ pkgs, config, osConfig, lib, ... }:
 
-{
+let
+  identity = osConfig.kore.identities.${config.home.username};
+in {
   services.gpg-agent = {
     enable = true;
     enableSshSupport = true;
@@ -13,6 +15,11 @@
       enable = true;
       settings.trust-model = "tofu+pgp";
       scdaemonSettings.disable-ccid = true;
+
+      publicKeys = lib.optional (identity.gpgKey != null) {
+        source = identity.gpgKey;
+        trust = "ultimate";
+      };
     };
 
     bash.initExtra = ''

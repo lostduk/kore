@@ -1,6 +1,14 @@
-{ inputs, outputs, config, lib, pkgs, ... }:
+{ inputs, outputs, config, lib, pkgs, utils, ... }:
 
-{
+# Policy for every host. Values under mkForce are invariants: roles and
+# hosts must not weaken them.
+let
+  impermanence = config.kore.impermanence.enable;
+  rollback = impermanence && config ? disko && config.disko.devices.disk ? main;
+
+  rootDevice = config.fileSystems."/".device;
+  rootUnit = "${utils.escapeSystemdPath rootDevice}.device";
+in {
   imports = [ inputs.impermanence.nixosModules.impermanence ];
 
   i18n = {
@@ -76,7 +84,7 @@
         KbdInteractiveAuthentication = false;
       };
       hostKeys = [{
-        path = "/persist/etc/ssh/ssh_host_ed25519_key";
+        path = "${lib.optionalString impermanence "/persist"}/etc/ssh/ssh_host_ed25519_key";
         type = "ed25519";
       }];
     };
@@ -109,6 +117,7 @@
     defaultPackages = lib.mkForce [];
 
     persistence."/persist" = {
+      enable = impermanence;
       hideMounts = false;
 
       directories = [
@@ -121,49 +130,63 @@
 
   programs.nano.enable = false;
 
-  boot.initrd = let
-    rootDevice = config.fileSystems."/".device;
-    systemdStage1 = config.boot.initrd.systemd.enable;
+  fileSystems = lib.mkIf impermanence {
+    "/persist".neededForBoot = true;
+  };
 
-    script = ''
-      mkdir -p /tmp
-      MNTPOINT=$(mktemp -d)
-      (
-        mount ${rootDevice} "$MNTPOINT"
-        trap 'umount "$MNTPOINT"' EXIT
+  system.activationScripts.persistent-dirs = lib.mkIf impermanence {
+    deps = [ "users" ];
+    text =
+      let
+        mkHomePersist = user: lib.optionalString user.createHome ''
+          mkdir -p /persist${user.home}
+          chown ${user.name}:${user.group} /persist${user.home}
+          chmod ${user.homeMode} /persist${user.home}
+        '';
+      in
+        lib.concatLines (map mkHomePersist (lib.attrValues config.users.users));
+  };
 
-        if [[ -e $MNTPOINT/@ ]]; then
-          echo "Backing up root..."
-          mkdir -p $MNTPOINT/old_roots
-          mv "$MNTPOINT/@" "$MNTPOINT/old_roots/@_$(date "+%Y-%m-%-d_%H:%M:%S")"
-        fi
+  assertions = [{
+    assertion = rollback -> config.boot.initrd.systemd.enable;
+    message = "kore: root rollback needs boot.initrd.systemd.enable";
+  }];
 
-        echo "Deleting 7+ days old roots..."
-        find "$MNTPOINT/old_roots" -mindepth 1 -maxdepth 1 \
-          -mtime +7 \
-          -exec btrfs sub del -R {} +
-
-        echo "Creating new root..."
-        btrfs sub cre "$MNTPOINT/@"
-      )
-    '';
-  in lib.mkIf (config ? "disko" && config.disko.devices.disk ? "main") ({
+  boot.initrd = lib.mkIf rollback {
     supportedFilesystems = [ "btrfs" ];
-    postDeviceCommands = lib.mkIf (!systemdStage1) (lib.mkBefore script);
 
-    systemd.services.wipe-root = lib.mkIf (systemdStage1) {
+    systemd.services.wipe-root = {
       wantedBy = [ "initrd.target" ];
-      requires = [ "dev-mapper-crypted.device" ];
+      requires = [ rootUnit ];
+      after = [ rootUnit ];
       before = [ "sysroot.mount" ];
-      after = [ "dev-mapper-crypted.device" "systemd-cryptsetup@crypted.service" ];
       unitConfig.DefaultDependencies = "no";
       serviceConfig = {
         Type = "oneshot";
         RemainAfterExit = true;
       };
-      script = script;
-    };
-  });
+      script = ''
+        mkdir -p /tmp
+        MNTPOINT=$(mktemp -d)
+        (
+          mount ${rootDevice} "$MNTPOINT"
+          trap 'umount "$MNTPOINT"' EXIT
 
-  fileSystems."/persist".neededForBoot = true;
+          if [[ -e $MNTPOINT/@ ]]; then
+            echo "Backing up root..."
+            mkdir -p $MNTPOINT/old_roots
+            mv "$MNTPOINT/@" "$MNTPOINT/old_roots/@_$(date "+%Y-%m-%-d_%H:%M:%S")"
+          fi
+
+          echo "Deleting 7+ days old roots..."
+          find "$MNTPOINT/old_roots" -mindepth 1 -maxdepth 1 \
+            -mtime +7 \
+            -exec btrfs sub del -R {} +
+
+          echo "Creating new root..."
+          btrfs sub cre "$MNTPOINT/@"
+        )
+      '';
+    };
+  };
 }

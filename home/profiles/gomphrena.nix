@@ -1,5 +1,3 @@
-{ lib, ... }:
-
 {
   imports = [
     ../features/cli/gpg.nix
@@ -10,6 +8,8 @@
     ../features/cli/tmux.nix
 
     ../features/misc/xdg.nix
+
+    ../features/secrets.nix
   ];
 
   # TMP: neovim suck tbh but it work
@@ -27,6 +27,5 @@
       \   'cache_enabled': 0,
       \ }
   '';
-
-  home.persistence."/persist" = lib.mkForce {};
 }
+
