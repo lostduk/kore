@@ -1,6 +1,8 @@
 { pkgs, ... }:
 
 {
+  programs.dwl.enable = true;
+
   xdg = {
     autostart.enable = true;
     icons.enable = true;

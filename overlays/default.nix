@@ -15,5 +15,7 @@
       inputs;
   };
 
-  modifications = final: prev: { };
+  modifications = final: prev: {
+    dwl = prev.dwl.override { configH = ./dwl_config.h; };
+  };
 }
