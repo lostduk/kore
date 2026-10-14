@@ -118,4 +118,7 @@ static const Button buttons[] = {
 	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
 };
 
-static const Axis axes[] = {};
+static const Axis axes[] = {
+	{ MODKEY, AxisUp, focusstack, {.i = -1} },
+	{ MODKEY, AxisDown, focusstack, {.i = +1} },
+};

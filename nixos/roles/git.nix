@@ -147,6 +147,9 @@ in {
       ${if access.mirror != null
         then "git -C '${root}/${repo}.git' config kore.mirror ${lib.escapeShellArg access.mirror}"
         else "git -C '${root}/${repo}.git' config --unset kore.mirror || true"}
+      ${if access.private
+        then "rm -f '${root}/${repo}.git/git-daemon-export-ok'"
+        else "touch '${root}/${repo}.git/git-daemon-export-ok'"}
     '') repos);
   };
 
@@ -172,6 +175,7 @@ in {
     forceSSL = true;
 
     locations."= /style.css".alias = "${petal}/share/petal/style.css";
+    locations."= /icon.svg".alias = "${petal}/share/petal/icon.svg";
 
     locations."/".extraConfig = fastcgi + ''
       fastcgi_param SCRIPT_FILENAME ${petal}/bin/petal;
@@ -187,7 +191,6 @@ in {
       fastcgi_param SCRIPT_FILENAME ${pkgs.git}/libexec/git-core/git-http-backend;
       fastcgi_param PATH_INFO /$1;
       fastcgi_param GIT_PROJECT_ROOT ${root};
-      fastcgi_param GIT_HTTP_EXPORT_ALL 1;
     '';
   };
 }

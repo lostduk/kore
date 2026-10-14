@@ -39,17 +39,17 @@
     "greenhouse": {
       "flake": false,
       "locked": {
-        "lastModified": 1791977330,
-        "narHash": "sha256-U5b02FLOLbIri0IHjkc9rbmqMKFahGvs1XJ1iwj11KI=",
+        "lastModified": 1792006262,
+        "narHash": "sha256-c7YHNx92l27Hu9v/dTbevtHKLb2T517oudbqSJCA5M4=",
         "ref": "refs/heads/main",
-        "rev": "3d35447859ea3605eed5b6300b61736fce6eeedd",
-        "revCount": 1,
+        "rev": "322994003fbbd7f9aa86c1ba1a1f9968eef1c3ad",
+        "revCount": 3,
         "type": "git",
-        "url": "ssh://git@git.lostduk.com/greenhouse"
+        "url": "https://git.lostduk.com/greenhouse.git"
       },
       "original": {
         "type": "git",
-        "url": "ssh://git@git.lostduk.com/greenhouse"
+        "url": "https://git.lostduk.com/greenhouse.git"
       }
     },
     "home-manager": {

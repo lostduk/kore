@@ -81,6 +81,10 @@ let
       type = types.nullOr types.str;
       default = null;
     };
+    private = mkOption {
+      type = types.bool;
+      default = false;
+    };
   };
 
   hostNames = name: host:
