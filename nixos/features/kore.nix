@@ -69,6 +69,14 @@ let
       type = types.listOf types.str;
       default = [];
     };
+    description = mkOption {
+      type = types.str;
+      default = "";
+    };
+    owner = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
   };
 
   hostNames = name: host:
@@ -117,7 +125,7 @@ in {
     }] ++ map (id: {
       assertion = cfg.identities ? ${id};
       message = "kore: repo ${repo} lists ${id}, but kore.json has no identity for it";
-    }) (acl.write ++ acl.read)) cfg.repos);
+    }) (acl.write ++ acl.read ++ lib.optional (acl.owner != null) acl.owner)) cfg.repos);
 
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;

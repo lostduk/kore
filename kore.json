@@ -23,6 +23,13 @@
     }
   },
   "repos": {
-    "kore": { "write": ["lostduk"] }
+    "kore": {
+      "write": ["lostduk"],
+      "description": "my public infrastructure monorepo"
+    },
+    "greenhouse": {
+      "write": ["lostduk"],
+      "description": "forge suite"
+    }
   }
 }

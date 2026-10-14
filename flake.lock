@@ -36,6 +36,22 @@
         "type": "github"
       }
     },
+    "greenhouse": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791977330,
+        "narHash": "sha256-U5b02FLOLbIri0IHjkc9rbmqMKFahGvs1XJ1iwj11KI=",
+        "ref": "refs/heads/main",
+        "rev": "3d35447859ea3605eed5b6300b61736fce6eeedd",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@git.lostduk.com/greenhouse"
+      },
+      "original": {
+        "type": "git",
+        "url": "ssh://git@git.lostduk.com/greenhouse"
+      }
+    },
     "home-manager": {
       "inputs": {
         "nixpkgs": [
@@ -152,6 +168,7 @@
     "root": {
       "inputs": {
         "disko": "disko",
+        "greenhouse": "greenhouse",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "nixos-wsl": "nixos-wsl",
