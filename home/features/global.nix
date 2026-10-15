@@ -22,7 +22,7 @@
 
       directories = [
         "documents"
-        ".mozilla"
+        ".config/mozilla"
         ".password-store"
       ];
     };
