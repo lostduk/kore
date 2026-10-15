@@ -3,6 +3,12 @@
 {
   programs.dwl.enable = true;
 
+  environment.loginShellInit = ''
+    if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = /dev/tty1 ]; then
+      exec /etc/xdg/dwl-session
+    fi
+  '';
+
   xdg = {
     autostart.enable = true;
     icons.enable = true;
