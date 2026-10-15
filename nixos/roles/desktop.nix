@@ -31,6 +31,8 @@ in {
 
   security.pam.services.swaylock = { };
 
+  programs.dconf.enable = true;
+
   environment.loginShellInit = ''
     if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = /dev/tty1 ]; then
       /etc/xdg/dwl-session

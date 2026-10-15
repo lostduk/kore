@@ -10,6 +10,7 @@
     ../features/misc/xdg.nix
     ../features/misc/firefox.nix
     ../features/misc/vesktop.nix
+    ../features/misc/gtk.nix
 
     ../features/wayland/dwl.nix
     ../features/wayland/foot.nix

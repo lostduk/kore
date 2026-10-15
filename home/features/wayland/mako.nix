@@ -25,6 +25,11 @@ in {
         text-color = c.dim;
       };
 
+      "category=volume" = {
+        default-timeout = 1500;
+        progress-color = "over ${c.green}40";
+      };
+
       "urgency=critical" = {
         border-color = c.red;
         default-timeout = 0;

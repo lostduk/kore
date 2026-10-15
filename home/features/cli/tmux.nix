@@ -9,6 +9,7 @@ in {
     prefix = "C-x";
     terminal = "tmux-256color";
     keyMode = "vi";
+    mouse = true;
 
     extraConfig = ''
       set -g status-style "bg=${c.bg},fg=${c.fg}"
