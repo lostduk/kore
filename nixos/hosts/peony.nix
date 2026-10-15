@@ -7,6 +7,8 @@
     ( modulesPath + "/installer/scan/not-detected.nix" )
   ];
 
+  time.timeZone = "Asia/Bangkok";
+
   boot = {
     kernelModules = [ "kvm-intel" ];
 
