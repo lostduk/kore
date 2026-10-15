@@ -1,6 +1,8 @@
-{ lib, pkgs, ... }:
+{ lib, pkgs, outputs, ... }:
 
 let
+  c = lib.mapAttrs (_: lib.removePrefix "#") outputs.palette.colors;
+
   garden-status = pkgs.writeShellApplication {
     name = "garden-status";
     runtimeInputs = [ pkgs.coreutils ];
@@ -46,7 +48,16 @@ in {
       extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
       configPackages = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
 
-      wlr.enable = true;
+      wlr = {
+        enable = true;
+        settings.screencast = {
+          chooser_type = "dmenu";
+          chooser_cmd = lib.concatStringsSep " " [
+            (lib.getExe pkgs.wmenu) "-p share" "-f 'Fantasque Sans Mono 11'"
+            "-N ${c.bg}" "-n ${c.fg}" "-M ${c.bg}" "-m ${c.green}" "-S ${c.surface}" "-s ${c.fg}"
+          ];
+        };
+      };
 
       config.common = {
         default = [ "wlr" ];
