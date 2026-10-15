@@ -22,8 +22,9 @@
       inherit (self) outputs;
       inherit (nixpkgs) lib;
       kore = lib.importJSON ./kore.json;
+      palette = import ./palette.nix;
     in {
-      inherit kore;
+      inherit kore palette;
 
       nixosConfigurations = import ./nixos/hosts { inherit inputs outputs lib kore; };
       homeModules = import ./home/profiles { inherit kore; };

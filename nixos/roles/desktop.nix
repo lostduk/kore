@@ -1,11 +1,37 @@
-{ pkgs, ... }:
+{ lib, pkgs, ... }:
 
-{
-  programs.dwl.enable = true;
+let
+  garden-status = pkgs.writeShellApplication {
+    name = "garden-status";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = ''
+      while :; do
+        case "$(date +%-H)" in
+          5|6) tod=dawn ;;
+          7|8|9|10) tod=morning ;;
+          11|12|13) tod=noon ;;
+          14|15|16) tod=afternoon ;;
+          17|18) tod=dusk ;;
+          19|20|21) tod=eventide ;;
+          *) tod=night ;;
+        esac
+        line="$(date "+%a %-d %b · $tod %H:%M")"
+        printf '%s\n' "''${line,,}"
+        sleep "$((60 - $(date +%-S)))"
+      done
+    '';
+  };
+in {
+  programs.dwl = {
+    enable = true;
+    extraSessionCommands = "exec < <(${lib.getExe garden-status})";
+  };
 
   environment.loginShellInit = ''
     if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = /dev/tty1 ]; then
-      exec /etc/xdg/dwl-session
+      /etc/xdg/dwl-session
+      systemctl --user stop dwl-session.target
+      exit
     fi
   '';
 
@@ -37,7 +63,7 @@
       noto-fonts-cjk-serif
       noto-fonts-color-emoji
 
-      nerd-fonts.comic-shanns-mono
+      fantasque-sans-mono
     ];
 
     fontconfig = {
@@ -46,7 +72,7 @@
       defaultFonts = {
         serif = [ "Noto Serif" "Noto Color Emoji" ];
         sansSerif = [ "Noto Sans" "Noto Color Emoji" ];
-        monospace = [ "ComicShannsMono Nerd Font" "Noto Color Emoji" ];
+        monospace = [ "Fantasque Sans Mono" "Noto Color Emoji" ];
         emoji = [ "Noto Color Emoji" ];
       };
     };

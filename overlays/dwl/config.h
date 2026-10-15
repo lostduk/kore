@@ -1,5 +1,10 @@
+#define COLOR(hex) { ((hex >> 24) & 0xFF) / 255.0f, \
+                     ((hex >> 16) & 0xFF) / 255.0f, \
+                     ((hex >> 8) & 0xFF) / 255.0f, \
+                     (hex & 0xFF) / 255.0f }
+
 /* general */
-#define TAGCOUNT (6)
+static char *tags[] = { "❦", "✾", "❁", "☘", "❃", "❋" };
 
 static int log_level                       = WLR_ERROR;
 static const int sloppyfocus               = 1;
@@ -8,11 +13,26 @@ static const int bypass_surface_visibility = 0;
 /* appearance */
 static const unsigned int borderpx         = 1;
 static const unsigned int snap             = 32;
-static const float rootcolor[]             = {0.1f, 0.1f, 0.1f, 1.0f};
-static const float bordercolor[]           = {0.2f, 0.2f, 0.2f, 1.0f};
-static const float focuscolor[]            = {0.0f, 0.3f, 0.4f, 1.0f};
-static const float urgentcolor[]           = {0.1f, 0.0f, 0.0f, 1.0f};
-static const float fullscreen_bg[]         = {0.1f, 0.1f, 0.1f, 1.0f};
+static const unsigned int gappx            = 10;
+static const int smartgaps                 = 0;
+static int gaps                            = 1;
+static const int showbar                   = 1;
+static const int topbar                    = 1;
+static const char *fonts[]                 = { "Fantasque Sans Mono:size=11", "Noto Sans Symbols 2:size=13" };
+static const float rootcolor[]             = COLOR(@bg@);
+static const float fullscreen_bg[]         = COLOR(@bg@);
+
+static uint32_t colors[][3] = {
+	/*                fg          bg     border */
+	[SchemeNorm]  = { @fg@,      @bg@, @surface@ },
+	[SchemeSel]   = { @green@,   @bg@, @green@ },
+	[SchemeUrg]   = { @red@,     @bg@, @red@ },
+	[SchemeOcc]   = { @fg@,      @bg@, @surface@ },
+	[SchemeEmpty] = { @surface@, @bg@, @surface@ },
+	[SchemeKb]    = { @teal@,    @bg@, @surface@ },
+};
+
+static const char *kblayouts[] = { "en", "th" };
 
 /* rules */
 static const Rule rules[] = {
@@ -72,7 +92,9 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define CHVT(n) { MODCTRL|MODALT, XKB_KEY_F##n, chvt, {.ui = (n)} }
 
 static const char *termcmd[] = { "foot", NULL };
-static const char *menucmd[] = { "wmenu-run", NULL };
+static const char *menucmd[] = { "wmenu-run", "-f", "Fantasque Sans Mono 11",
+	"-N", "@bgRgb@", "-n", "@fgRgb@", "-M", "@bgRgb@", "-m", "@greenRgb@",
+	"-S", "@surfaceRgb@", "-s", "@fgRgb@", NULL };
 
 static const Key keys[] = {
 	{ MODKEY, XKB_KEY_d, spawn, {.v = menucmd} },
@@ -91,6 +113,8 @@ static const Key keys[] = {
 	{ MODKEY|MODSHIFT, XKB_KEY_m, setlayout, {.v = &layouts[2]} },
 	{ MODKEY, XKB_KEY_space, togglefloating, {0} },
 	{ MODKEY, XKB_KEY_f, togglefullscreen, {0} },
+	{ MODKEY, XKB_KEY_g, togglegaps, {0} },
+	{ MODKEY, XKB_KEY_b, togglebar, {0} },
 	{ MODKEY, XKB_KEY_comma, focusmon, {.i = WLR_DIRECTION_LEFT} },
 	{ MODKEY, XKB_KEY_period, focusmon, {.i = WLR_DIRECTION_RIGHT} },
 	{ MODKEY|MODSHIFT, XKB_KEY_comma, tagmon, {.i = WLR_DIRECTION_LEFT} },
@@ -113,9 +137,15 @@ static const Key keys[] = {
 };
 
 static const Button buttons[] = {
-	{ MODKEY, BTN_LEFT, moveresize, {.ui = CurMove} },
-	{ MODKEY, BTN_RIGHT, moveresize, {.ui = CurResize} },
-	{ MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ ClkClient, MODKEY, BTN_LEFT, moveresize, {.ui = CurMove} },
+	{ ClkClient, MODKEY, BTN_RIGHT, moveresize, {.ui = CurResize} },
+	{ ClkClient, MODKEY, BTN_MIDDLE, togglefloating, {0} },
+	{ ClkTagBar, 0, BTN_LEFT, view, {0} },
+	{ ClkTagBar, 0, BTN_RIGHT, toggleview, {0} },
+	{ ClkTagBar, MODKEY, BTN_LEFT, tag, {0} },
+	{ ClkTagBar, MODKEY, BTN_RIGHT, toggletag, {0} },
+	{ ClkLtSymbol, 0, BTN_LEFT, setlayout, {.v = &layouts[0]} },
+	{ ClkLtSymbol, 0, BTN_RIGHT, setlayout, {.v = &layouts[2]} },
 };
 
 static const Axis axes[] = {

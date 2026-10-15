@@ -35,6 +35,7 @@
       set number
       set relativenumber
       set nowrap
+      set notermguicolors
       set lazyredraw
       set cc=80
 
