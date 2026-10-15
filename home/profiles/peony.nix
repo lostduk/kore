@@ -12,5 +12,7 @@
 
     ../features/wayland/dwl.nix
     ../features/wayland/foot.nix
+
+    ../features/secrets.nix
   ];
 }

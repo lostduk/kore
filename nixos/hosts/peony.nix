@@ -28,12 +28,12 @@
 
   disko.devices.disk.main = {
     type = "disk";
-    device = "/dev/disk/by-id/ata-OCPC_SSD_2.5__SATA_III_240GB_LITE_2507220200324";
+    device = "/dev/sda";
     content = {
       type = "gpt";
       partitions = {
         ESP = {
-          size = "1G";
+          size = "512M";
           type = "EF00";
           content = {
             type = "filesystem";
