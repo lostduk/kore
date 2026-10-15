@@ -14,6 +14,26 @@ in {
     ( modulesPath + "/profiles/minimal.nix" )
   ];
 
+  programs.bash.promptInit = ''
+    __prompt() {
+      local status=$?
+      case "$TERM" in
+        foot*|xterm*|tmux*|screen*)
+          printf '\e]0;%s@%s %s\a' "$USER" "''${HOSTNAME%%.*}" "''${PWD/#$HOME/\~}" ;;
+      esac
+
+      local arrow='\[\e[32m\]->\[\e[0m\]'
+      [ "$status" -ne 0 ] && arrow='\[\e[31m\]->\[\e[0m\]'
+
+      local pre=""
+      [ -n "''${SSH_CONNECTION:-}" ] && pre='\[\e[37m\]\h\[\e[0m\] '
+      [ "$EUID" -eq 0 ] && pre="\[\e[31m\]root\[\e[0m\] $pre"
+
+      PS1="$pre\[\e[37m\]\W\[\e[0m\] $arrow "
+    }
+    PROMPT_COMMAND=__prompt
+  '';
+
   i18n = {
     defaultLocale = "en_US.UTF-8";
     supportedLocales = [ "en_US.UTF-8/UTF-8" ];
