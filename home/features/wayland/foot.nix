@@ -9,6 +9,7 @@ in {
       main = {
         font = "Fantasque Sans Mono:size=11";
         line-height = "16px";
+        pad = "30x30 center";
       };
 
       colors-dark = {
