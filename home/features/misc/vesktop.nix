@@ -16,7 +16,8 @@ let
       bus="$(mktemp -u "$run/vesktop-bus.XXXXXX")"
 
       xdg-dbus-proxy "$DBUS_SESSION_BUS_ADDRESS" "$bus" --filter \
-        --talk=org.freedesktop.portal.Desktop &
+        --talk=org.freedesktop.portal.Desktop \
+        --talk=org.freedesktop.Notifications &
       proxy=$!
       trap 'kill "$proxy" 2>/dev/null; rm -f "$bus"' EXIT
       while [ ! -S "$bus" ]; do sleep 0.05; done

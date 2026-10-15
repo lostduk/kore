@@ -92,6 +92,12 @@ static const enum libinput_config_tap_button_map button_map = LIBINPUT_CONFIG_TA
 #define CHVT(n) { MODCTRL|MODALT, XKB_KEY_F##n, chvt, {.ui = (n)} }
 
 static const char *termcmd[] = { "foot", NULL };
+static const char *lockcmd[] = { "swaylock", NULL };
+static const char *dismisscmd[] = { "makoctl", "dismiss", NULL };
+static const char *dismissallcmd[] = { "makoctl", "dismiss", "--all", NULL };
+static const char *shotareacmd[] = { "screenshot", "area", NULL };
+static const char *shotoutputcmd[] = { "screenshot", "output", NULL };
+static const char *shotsavecmd[] = { "screenshot", "save", NULL };
 static const char *menucmd[] = { "wmenu-run", "-f", "Fantasque Sans Mono 11",
 	"-N", "@bgRgb@", "-n", "@fgRgb@", "-M", "@bgRgb@", "-m", "@greenRgb@",
 	"-S", "@surfaceRgb@", "-s", "@fgRgb@", NULL };
@@ -115,6 +121,12 @@ static const Key keys[] = {
 	{ MODKEY, XKB_KEY_f, togglefullscreen, {0} },
 	{ MODKEY, XKB_KEY_g, togglegaps, {0} },
 	{ MODKEY, XKB_KEY_b, togglebar, {0} },
+	{ MODKEY, XKB_KEY_Escape, spawn, {.v = lockcmd} },
+	{ MODKEY, XKB_KEY_n, spawn, {.v = dismisscmd} },
+	{ MODKEY|MODSHIFT, XKB_KEY_n, spawn, {.v = dismissallcmd} },
+	{ 0, XKB_KEY_Print, spawn, {.v = shotareacmd} },
+	{ MODSHIFT, XKB_KEY_Print, spawn, {.v = shotoutputcmd} },
+	{ MODKEY, XKB_KEY_Print, spawn, {.v = shotsavecmd} },
 	{ MODKEY, XKB_KEY_comma, focusmon, {.i = WLR_DIRECTION_LEFT} },
 	{ MODKEY, XKB_KEY_period, focusmon, {.i = WLR_DIRECTION_RIGHT} },
 	{ MODKEY|MODSHIFT, XKB_KEY_comma, tagmon, {.i = WLR_DIRECTION_LEFT} },

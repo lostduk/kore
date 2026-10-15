@@ -14,6 +14,9 @@
     ../features/wayland/dwl.nix
     ../features/wayland/foot.nix
     ../features/wayland/wbg.nix
+    ../features/wayland/mako.nix
+    ../features/wayland/swaylock.nix
+    ../features/wayland/swayidle.nix
 
     ../features/secrets.nix
   ];

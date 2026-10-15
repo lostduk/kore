@@ -29,6 +29,8 @@ in {
     extraSessionCommands = "exec < <(${lib.getExe garden-status})";
   };
 
+  security.pam.services.swaylock = { };
+
   environment.loginShellInit = ''
     if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = /dev/tty1 ]; then
       /etc/xdg/dwl-session

@@ -18,7 +18,7 @@ in {
     defaultLocale = "en_US.UTF-8";
     supportedLocales = [ "en_US.UTF-8/UTF-8" ];
   };
-  time.timeZone = "UTC";
+  time.timeZone = lib.mkDefault "UTC";
 
   nix = {
     package = pkgs.nixVersions.latest;
@@ -37,6 +37,14 @@ in {
       trusted-users = [ "root" "@wheel" ];
       experimental-features = [ "nix-command" "flakes" ];
     };
+
+    registry.nixpkgs.to = {
+      type = "github";
+      owner = "NixOS";
+      repo = "nixpkgs";
+      inherit (inputs.nixpkgs) rev narHash;
+    };
+    nixPath = [ "nixpkgs=flake:nixpkgs" ];
   };
 
   nixpkgs = {
