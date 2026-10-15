@@ -6,15 +6,21 @@ let
     runtimeInputs = with pkgs; [ grim slurp wl-clipboard coreutils ];
     text = ''
       case "''${1:-area}" in
-        area) grim -g "$(slurp)" - | wl-copy -t image/png ;;
-        output) grim -g "$(slurp -o)" - | wl-copy -t image/png ;;
-        save)
-          dir="${config.xdg.userDirs.pictures}/screenshots"
-          mkdir -p "$dir"
-          grim -g "$(slurp)" "$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
-          ;;
+        area|save) geometry="$(slurp)" || exit 0 ;;
+        output) geometry="$(slurp -o)" || exit 0 ;;
         *) echo "usage: screenshot [area|output|save]" >&2; exit 1 ;;
       esac
+
+      if [ "''${1:-area}" = save ]; then
+        dir="${config.xdg.userDirs.pictures}/screenshots"
+        mkdir -p "$dir"
+        grim -g "$geometry" "$dir/$(date +%Y-%m-%d_%H-%M-%S).png"
+      else
+        shot="$(mktemp)"
+        trap 'rm -f "$shot"' EXIT
+        grim -g "$geometry" "$shot"
+        wl-copy -t image/png < "$shot"
+      fi
     '';
   };
 
@@ -48,8 +54,10 @@ let
       fi
 
       idfile="''${XDG_RUNTIME_DIR:-/tmp}/volume-notify-id"
-      id="$(cat "$idfile" 2>/dev/null || echo 0)"
-      notify-send -p -r "$id" -c volume -h "int:value:$pct" "$title" > "$idfile"
+      id="$(cat "$idfile" 2>/dev/null || true)"
+      [[ "$id" =~ ^[0-9]+$ ]] || id=0
+      id="$(notify-send -p -r "$id" -c volume -h "int:value:$pct" "$title")"
+      printf '%s\n' "$id" > "$idfile"
     '';
   };
 in {

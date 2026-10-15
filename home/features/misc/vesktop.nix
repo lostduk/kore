@@ -10,9 +10,16 @@ let
 
   jail = pkgs.writeShellApplication {
     name = "vesktop";
-    runtimeInputs = with pkgs; [ bubblewrap xdg-dbus-proxy coreutils ];
+    runtimeInputs = with pkgs; [ bubblewrap xdg-dbus-proxy coreutils util-linux ];
     text = ''
       run="$XDG_RUNTIME_DIR"
+
+      exec 9> "$run/vesktop.lock"
+      if ! flock -n 9; then
+        echo "vesktop is already running" >&2
+        exit 0
+      fi
+
       bus="$(mktemp -u "$run/vesktop-bus.XXXXXX")"
 
       xdg-dbus-proxy "$DBUS_SESSION_BUS_ADDRESS" "$bus" --filter \
@@ -20,7 +27,10 @@ let
         --talk=org.freedesktop.Notifications &
       proxy=$!
       trap 'kill "$proxy" 2>/dev/null; rm -f "$bus"' EXIT
-      while [ ! -S "$bus" ]; do sleep 0.05; done
+      while [ ! -S "$bus" ]; do
+        kill -0 "$proxy" 2>/dev/null || { echo "vesktop: xdg-dbus-proxy failed" >&2; exit 1; }
+        sleep 0.05
+      done
 
       mkdir -p "${configDir}" "${downloads}"
 
