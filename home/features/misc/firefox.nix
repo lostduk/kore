@@ -1,4 +1,8 @@
+{ outputs, ... }:
+
 let
+  c = outputs.palette.colors;
+
   startup = {
     "browser.aboutConfig.showWarning" = false;
     "browser.shell.checkDefaultBrowser" = false;
@@ -442,7 +446,14 @@ let
     "browser.shareqrcode.embed_logo" = false;
   };
 
+  sidebar = {
+    "sidebar.visibility" = "hide-sidebar";
+    "sidebar.verticalTabs" = false;
+    "sidebar.main.tools" = "";
+  };
+
   theme = {
+    "toolkit.legacyUserProfileCustomizations.stylesheets" = true;
     "extensions.activeThemeID" = "firefox-compact-dark@mozilla.org";
     "layout.css.prefers-color-scheme.content-override" = 0;
   };
@@ -485,7 +496,69 @@ in {
       settings = startup // locale // telemetry // quieter // ai
         // safebrowsing // network // urlbar // passwords // disk // tls
         // media // dom // javascript // sandbox // extensions // tracking
-        // sanitize // fingerprinting // permissions // behaviour // theme;
+        // sanitize // fingerprinting // permissions // behaviour // sidebar // theme;
+
+      userChrome = ''
+        :root {
+          --lwt-accent-color: ${c.bg} !important;
+          --lwt-accent-color-inactive: ${c.bg} !important;
+          --lwt-text-color: ${c.fg} !important;
+
+          --toolbox-background-image: none !important;
+          --toolbox-background-color: ${c.bg} !important;
+          --toolbox-background-color-inactive: ${c.bg} !important;
+          --toolbox-text-color: ${c.fg} !important;
+          --toolbox-text-color-inactive: ${c.dim} !important;
+
+          --tab-background-color-selected: ${c.bgAlt} !important;
+          --tab-text-color-selected: ${c.fg} !important;
+          --tab-border-color-selected-leading: ${c.green} !important;
+          --tab-border-color-selected-trailing: ${c.green} !important;
+          --lwt-tab-line-color: ${c.green} !important;
+          --tab-loading-fill: ${c.green} !important;
+          --lwt-background-tab-separator-color: ${c.surface} !important;
+
+          --toolbar-background-color: ${c.bgAlt} !important;
+          --toolbar-text-color: ${c.fg} !important;
+          --toolbarbutton-icon-fill: ${c.fg} !important;
+          --toolbarbutton-icon-fill-attention: ${c.green} !important;
+          --toolbarbutton-background-color-hover: color-mix(in srgb, ${c.green} 12%, transparent) !important;
+          --toolbarbutton-background-color-active: color-mix(in srgb, ${c.green} 22%, transparent) !important;
+          --toolbarseparator-color: ${c.surface} !important;
+          --tabs-navbar-separator-color: transparent !important;
+          --chrome-content-separator-color: ${c.surface} !important;
+
+          --toolbar-field-background-color: ${c.bg} !important;
+          --toolbar-field-background-color-focus: ${c.bg} !important;
+          --toolbar-field-text-color: ${c.fg} !important;
+          --toolbar-field-text-color-focus: ${c.fg} !important;
+          --toolbar-field-border-color: ${c.surface} !important;
+          --toolbar-field-border-color-focus: ${c.green} !important;
+          --lwt-toolbar-field-highlight: ${c.surface} !important;
+          --lwt-toolbar-field-highlight-text: ${c.fg} !important;
+
+          --panel-background-color: ${c.bg} !important;
+          --panel-text-color: ${c.fg} !important;
+          --panel-border-color: ${c.surface} !important;
+          --urlbarview-background-color-selected: ${c.surface} !important;
+          --urlbarview-text-color-selected: ${c.fg} !important;
+
+          --sidebar-background-color: ${c.bg} !important;
+          --sidebar-text-color: ${c.fg} !important;
+          --sidebar-border-color: ${c.surface} !important;
+          --tabpanel-background-color: ${c.bg} !important;
+
+          --focus-outline-color: ${c.green} !important;
+        }
+
+        #sidebar-button,
+        #sidebar-container,
+        #sidebar-launcher-splitter,
+        #sidebar-box,
+        #sidebar-splitter {
+          display: none !important;
+        }
+      '';
     };
   };
 }
