@@ -53,6 +53,8 @@
   };
 
   services = {
+    openssh.enable = false;
+
     udisks2.enable = true;
 
     pipewire = {

@@ -140,7 +140,7 @@ in {
 
     users.users = lib.listToAttrs (lib.imap0 (i: user: lib.nameValuePair user {
       isNormalUser = true;
-      password = "tmp";
+      hashedPassword = "$y$j9T$xSYrV.FXawYKf8Rv4NZgf/$OPy/j7bs2K5izJ/zHtY9Trp0JW6jF46868LqB.gjKQ5";
       extraGroups = [ "wheel" ];
 
       createHome = hasHome;

@@ -3,6 +3,7 @@
 let
   impermanence = config.kore.impermanence.enable;
   rollback = impermanence && config ? disko && config.disko.devices.disk ? main;
+  wsl = config ? wsl && config.wsl.enable;
 
   rootDevice = config.fileSystems."/".device;
   rootUnit = "${utils.escapeSystemdPath rootDevice}.device";
@@ -74,11 +75,29 @@ in {
     };
   };
 
+  networking.dhcpcd.extraConfig = lib.mkIf (!wsl) "nohook resolv.conf";
+
   services = {
     pcscd.enable = true;
 
-    openssh = {
+    resolved = lib.mkIf (!wsl) {
       enable = true;
+
+      settings.Resolve = {
+        DNS = [
+          "194.242.2.2#dns.mullvad.net"
+          "9.9.9.9#dns.quad9.net"
+          "149.112.112.112#dns.quad9.net"
+        ];
+        FallbackDNS = [];
+        Domains = [ "~." ];
+        DNSOverTLS = true;
+        DNSSEC = false;
+      };
+    };
+
+    openssh = {
+      enable = lib.mkDefault true;
       settings = {
         PermitRootLogin = "no";
         PasswordAuthentication = false;
@@ -114,8 +133,71 @@ in {
     users.root.hashedPassword = lib.mkForce "!";
   };
 
+  boot = {
+    kernelParams = [
+      "slab_nomerge"
+      "init_on_alloc=1"
+      "init_on_free=1"
+      "page_alloc.shuffle=1"
+      "randomize_kstack_offset=on"
+      "vsyscall=none"
+      "debugfs=off"
+    ];
+
+    kernel.sysctl = {
+      "kernel.kptr_restrict" = 2;
+      "kernel.dmesg_restrict" = 1;
+      "kernel.printk" = "3 3 3 3";
+      "kernel.unprivileged_bpf_disabled" = 1;
+      "net.core.bpf_jit_harden" = 2;
+      "kernel.yama.ptrace_scope" = 1;
+      "kernel.sysrq" = 0;
+      "kernel.perf_event_paranoid" = 3;
+      "dev.tty.ldisc_autoload" = 0;
+      "vm.unprivileged_userfaultfd" = 0;
+      "fs.suid_dumpable" = 0;
+      "fs.protected_fifos" = 2;
+      "fs.protected_regular" = 2;
+      "fs.protected_symlinks" = 1;
+      "fs.protected_hardlinks" = 1;
+
+      "net.ipv4.tcp_syncookies" = 1;
+      "net.ipv4.tcp_rfc1337" = 1;
+      "net.ipv4.conf.all.rp_filter" = 1;
+      "net.ipv4.conf.default.rp_filter" = 1;
+      "net.ipv4.conf.all.accept_redirects" = 0;
+      "net.ipv4.conf.default.accept_redirects" = 0;
+      "net.ipv4.conf.all.secure_redirects" = 0;
+      "net.ipv4.conf.default.secure_redirects" = 0;
+      "net.ipv4.conf.all.send_redirects" = 0;
+      "net.ipv4.conf.default.send_redirects" = 0;
+      "net.ipv4.conf.all.accept_source_route" = 0;
+      "net.ipv4.conf.default.accept_source_route" = 0;
+      "net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+    };
+
+    blacklistedKernelModules = [
+      "dccp" "sctp" "rds" "tipc" "n-hdlc" "ax25" "netrom" "x25" "rose"
+      "decnet" "econet" "af_802154" "ipx" "appletalk" "psnap" "p8023"
+      "p8022" "can" "atm"
+      "cramfs" "freevxfs" "jffs2" "hfs" "hfsplus"
+      "firewire-core" "thunderbolt" "vivid"
+    ];
+  };
+
+  systemd.coredump.settings.Coredump = {
+    Storage = "none";
+    ProcessSizeMax = 0;
+  };
+
   environment = {
     defaultPackages = lib.mkForce [];
+
+    etc = lib.mkIf (!config.services.openssh.enable) (lib.mapAttrs' (name: user:
+      lib.nameValuePair "ssh/authorized_keys.d/${name}" {
+        mode = "0444";
+        text = lib.concatLines user.openssh.authorizedKeys.keys;
+      }) (lib.filterAttrs (_: user: user.openssh.authorizedKeys.keys != []) config.users.users));
 
     persistence."/persist" = {
       enable = impermanence;
@@ -123,6 +205,7 @@ in {
 
       directories = [
         "/srv"
+        "/var/log"
         "/var/lib/nixos"
         "/var/lib/systemd"
       ];

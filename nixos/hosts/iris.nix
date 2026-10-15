@@ -11,7 +11,6 @@ in {
 
   networking = {
     useDHCP = false;
-    nameservers = [ "9.9.9.9" "149.112.112.112" ];
 
     interfaces.enp0s4.ipv4.addresses = [{ address = config.kore.currentHost.ipv4; prefixLength = 32; }];
 
