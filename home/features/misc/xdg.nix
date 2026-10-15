@@ -11,7 +11,7 @@
       videos = "${config.home.homeDirectory}/media";
       music = "${config.home.homeDirectory}/media";
       pictures = "${config.home.homeDirectory}/media";
-      download = "${config.home.homeDirectory}";
+      download = "${config.home.homeDirectory}/downloads";
       desktop = "${config.home.homeDirectory}";
       publicShare = "${config.home.homeDirectory}";
       templates = "${config.home.homeDirectory}";
