@@ -16,9 +16,9 @@
     "iris": {
       "system": "x86_64-linux",
       "stateVersion": "26.11",
-      "roles": ["web", "git"],
+      "roles": ["web", "git", "mail"],
       "users": ["lostduk"],
-      "aliases": ["git"],
+      "aliases": ["git", "mail"],
       "ipv4": "82.153.138.53"
     },
     "peony": {
