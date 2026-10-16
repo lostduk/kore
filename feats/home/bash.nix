@@ -1,4 +1,4 @@
-{ osConfig, pkgs, ... }:
+{ osConfig, config, pkgs, ... }:
 
 let
   fetch = pkgs.writeShellApplication {
@@ -71,6 +71,8 @@ let
 in {
   home.packages = [ fetch ];
 
+  kore.greeting = "fetch";
+
   programs = {
     eza.enable = true;
 
@@ -88,7 +90,7 @@ in {
 
       initExtra = ''
         if [[ -z "''${TMUX:-}" && -z "''${SSH_CONNECTION:-}" && "$TERM" == foot* ]]; then
-          fetch
+          ${config.kore.greeting}
         fi
       '';
     };

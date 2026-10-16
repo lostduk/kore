@@ -227,13 +227,11 @@ in {
     Install.WantedBy = [ "dwl-session.target" ];
   };
 
-  programs.bash.initExtra = lib.mkAfter ''
-    if [[ -z "''${TMUX:-}" && -z "''${SSH_CONNECTION:-}" && "$TERM" == foot* ]]; then
-      read -r unread 2>/dev/null < "''${XDG_CACHE_HOME:-$HOME/.cache}/mail/unread"
-      if [[ "''${unread:-0}" -gt 0 ]]; then
-        printf '  \e[32m✉\e[0m  %s unread mail\n\n' "$unread"
-      fi
-      unset unread
+  kore.greeting = lib.mkAfter ''
+    read -r unread 2>/dev/null < "''${XDG_CACHE_HOME:-$HOME/.cache}/mail/unread"
+    if [[ "''${unread:-0}" -gt 0 ]]; then
+      printf '  \e[32m✉\e[0m  %s unread mail\n\n' "$unread"
     fi
+    unset unread
   '';
 }

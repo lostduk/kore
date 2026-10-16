@@ -1,6 +1,11 @@
 { osConfig, pkgs, lib, ... }:
 
 {
+  options.kore.greeting = lib.mkOption {
+    type = lib.types.lines;
+    default = "";
+  };
+
   options.kore.secrets = lib.mkOption {
     type = lib.types.listOf lib.types.str;
     default = [];

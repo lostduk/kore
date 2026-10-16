@@ -39,6 +39,8 @@
     in {
       inherit kore palette;
 
+      overlays = import ./overlays { inherit inputs outputs; };
+
       nixosConfigurations = lib.mapAttrs mkSystem kore.hosts;
 
       checks.x86_64-linux = let
@@ -58,7 +60,5 @@
           touch $out
         '';
       };
-
-      overlays = import ./overlays { inherit inputs outputs; };
     };
 }
