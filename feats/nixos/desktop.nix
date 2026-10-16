@@ -78,7 +78,6 @@ in {
     packages = with pkgs; [
       noto-fonts
       noto-fonts-cjk-sans
-      noto-fonts-cjk-serif
       noto-fonts-color-emoji
 
       fantasque-sans-mono
@@ -99,13 +98,14 @@ in {
   services = {
     openssh.enable = false;
 
+    pcscd.enable = true;
     udisks2.enable = true;
 
     pipewire = {
       enable = true;
 
       alsa.enable = true;
-      alsa.support32Bit = true;
+      alsa.support32Bit = false;
 
       pulse.enable = true;
       jack.enable = true;

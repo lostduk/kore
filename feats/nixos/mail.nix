@@ -3,25 +3,26 @@
 let
   inherit (config.networking) domain;
   inherit (config.sops) placeholder;
+  inherit (config.kore) admin mailboxes identities;
   fqdn = config.kore.domains.mail;
   root = "/srv/mail";
   cert = config.security.acme.certs.${fqdn}.directory;
-  admin = builtins.head config.kore.currentHost.users;
-  adminEmail = config.kore.identities.${admin}.email;
+  adminEmail = mailboxes.${admin};
 
-  mailboxes = lib.filterAttrs (_: identity:
-    identity.email != null && lib.hasSuffix "@${domain}" identity.email
-  ) config.kore.identities;
+  localPart = email: builtins.head (lib.splitString "@" email);
+  deviceSecret = name: device: "mail/${name}/devices/${device}";
 
-  mailboxMap = pkgs.writeText "kore-mail-mailboxes" (lib.concatLines (lib.mapAttrsToList (_: identity:
-    "${identity.email} ${identity.email}"
+  mailboxMap = pkgs.writeText "kore-mail-mailboxes" (lib.concatLines (lib.mapAttrsToList (_: email:
+    "${email} ${email}"
+  ) mailboxes));
+
+  userdb = pkgs.writeText "kore-mail-users" (lib.concatLines (lib.mapAttrsToList (name: email:
+    "${email}:::::${root}/${name}::"
   ) mailboxes));
 
   roleMap = pkgs.writeText "kore-mail-roles" (lib.concatMapStrings (name:
     "${name}@${domain} ${adminEmail}\n"
   ) [ "postmaster" "abuse" "dmarc" ]);
-
-  devicesFile = "/run/kore-mail/devices";
 
   aliasMap = "/var/lib/postfix/conf/kore-aliases";
   aliasMaps = [ "texthash:${roleMap}" "texthash:${aliasMap}" ];
@@ -33,47 +34,28 @@ let
       stop;
     }
   '';
-
-  learnSpam = pkgs.writeText "learn-spam.sieve" ''
-    require ["vnd.dovecot.pipe", "copy", "imapsieve"];
-    pipe :copy "learn-spam";
-  '';
-
-  learnHam = pkgs.writeText "learn-ham.sieve" ''
-    require ["vnd.dovecot.pipe", "copy", "imapsieve", "environment", "variables"];
-    if environment :matches "imap.mailbox" "*" {
-      set "mailbox" "''${1}";
-    }
-    if string "''${mailbox}" "Trash" {
-      stop;
-    }
-    pipe :copy "learn-ham";
-  '';
-
-  learn = kind: lib.getExe (pkgs.writeShellScriptBin "learn-${kind}" ''
-    exec ${config.services.rspamd.package}/bin/rspamc learn_${kind}
-  '');
 in {
   assertions = [{
-    assertion = lib.elem "web" config.kore.currentHost.roles;
-    message = "kore: the mail role needs the web role for ACME";
+    assertion = lib.elem "web" config.kore.currentHost.feats.nixos;
+    message = "kore: the mail feat needs the web feat for ACME";
   } {
     assertion = mailboxes ? ${admin};
     message = "kore: mail admin ${admin} needs an email @${domain}";
-  }];
+  }] ++ lib.concatMap (name: map (device: {
+    assertion = builtins.match "[a-z0-9][a-z0-9-]*" device != null;
+    message = "kore: mail device name ${device} of ${name} is invalid";
+  }) identities.${name}.devices) (lib.attrNames mailboxes);
 
   sops.secrets = lib.concatMapAttrs (name: _: {
-    "mail/${name}/password" = {};
     "mail/${name}/aliases".restartUnits = [ "postfix-setup.service" "postfix.service" ];
-    "mail/${name}/devices".restartUnits = [ "dovecot.service" ];
-  }) mailboxes;
+  } // lib.genAttrs (map (deviceSecret name) identities.${name}.devices) (_: {})) mailboxes;
 
   sops.templates.kore-mail-passwd = {
     group = config.services.dovecot2.settings.default_internal_group;
     mode = "0440";
-    content = lib.concatLines (lib.mapAttrsToList (name: identity:
-      "${identity.email}:{CRYPT}${placeholder."mail/${name}/password"}::::${root}/${name}::"
-    ) mailboxes);
+    content = lib.concatLines (lib.concatLists (lib.mapAttrsToList (name: email: map (device:
+      "${localPart email}+${device}@${domain}:{PLAIN}${placeholder.${deviceSecret name device}}::::::user=${email}"
+    ) identities.${name}.devices) mailboxes));
   };
 
   services.nginx.virtualHosts.${fqdn} = {
@@ -122,14 +104,14 @@ in {
 
   systemd.services.postfix-setup.script = lib.mkAfter ''
     : > ${aliasMap}
-    ${lib.concatStrings (lib.mapAttrsToList (name: identity: ''
+    ${lib.concatStrings (lib.mapAttrsToList (name: email: ''
       sed 's/#.*//' ${config.sops.secrets."mail/${name}/aliases".path} | tr -s '[:space:]' '\n' | while read -r alias; do
         [ -n "$alias" ] || continue
         if [[ ! "$alias" =~ ^[a-z0-9][a-z0-9._-]*$ ]]; then
           echo "kore-mail: invalid alias '$alias' for ${name}" >&2
           exit 1
         fi
-        echo "$alias@${domain} ${identity.email}" >> ${aliasMap}
+        echo "$alias@${domain} ${email}" >> ${aliasMap}
       done
     '') mailboxes)}
   '';
@@ -137,31 +119,20 @@ in {
   services.rspamd = {
     enable = true;
     postfix.enable = true;
-    locals = {
-      "redis.conf".text = ''
-        servers = "${config.services.redis.servers.rspamd.unixSocket}";
-      '';
-      "classifier-bayes.conf".text = ''
-        autolearn = true;
-      '';
-      "dkim_signing.conf".text = ''
-        try_fallback = false;
-        allow_username_mismatch = true;
-        domain {
-          ${domain} {
-            selector = "kore";
-            path = "/var/lib/rspamd/dkim/${domain}.kore.key";
-          }
+    workers.controller.bindSockets = lib.mkForce [{
+      socket = "/run/rspamd/controller.sock";
+      mode = "0600";
+    }];
+    locals."dkim_signing.conf".text = ''
+      try_fallback = false;
+      allow_username_mismatch = true;
+      domain {
+        ${domain} {
+          selector = "kore";
+          path = "/var/lib/rspamd/dkim/${domain}.kore.key";
         }
-      '';
-    };
-  };
-
-  users.users.${config.services.rspamd.user}.extraGroups = [ config.services.redis.servers.rspamd.group ];
-
-  services.redis.servers.rspamd = {
-    enable = true;
-    port = 0;
+      }
+    '';
   };
 
   systemd.services.kore-mail-dkim = {
@@ -188,7 +159,6 @@ in {
 
   services.dovecot2 = {
     enable = true;
-    sieve.pipeBins = [ (learn "spam") (learn "ham") ];
     settings = {
       dovecot_config_version = "2.4.0";
       dovecot_storage_version = "2.4.0";
@@ -213,11 +183,7 @@ in {
       auth_username_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.-_@+";
 
       "passdb passwd-file".passwd_file_path = config.sops.templates.kore-mail-passwd.path;
-      "userdb passwd-file".passwd_file_path = config.sops.templates.kore-mail-passwd.path;
-      "passdb devices" = {
-        driver = "passwd-file";
-        passwd_file_path = devicesFile;
-      };
+      "userdb passwd-file".passwd_file_path = userdb;
 
       "namespace inbox" = {
         inbox = true;
@@ -225,16 +191,7 @@ in {
         mailbox = [
           { _section.name = "Drafts"; special_use = "\\Drafts"; auto = "subscribe"; }
           { _section.name = "Sent"; special_use = "\\Sent"; auto = "subscribe"; }
-          {
-            _section.name = "Junk";
-            special_use = "\\Junk";
-            auto = "subscribe";
-            "sieve_script learn-spam" = {
-              type = "before";
-              cause = "copy";
-              path = learnSpam;
-            };
-          }
+          { _section.name = "Junk"; special_use = "\\Junk"; auto = "subscribe"; }
           { _section.name = "Trash"; special_use = "\\Trash"; auto = "subscribe"; }
           { _section.name = "Archive"; special_use = "\\Archive"; auto = "subscribe"; }
         ];
@@ -246,14 +203,6 @@ in {
           type = "before";
           path = spamSieve;
         };
-      };
-
-      "protocol imap".mail_plugins.imap_sieve = true;
-      sieve_plugins.sieve_imapsieve = true;
-      "imapsieve_from Junk"."sieve_script learn-ham" = {
-        type = "before";
-        cause = "copy";
-        path = learnHam;
       };
 
       service = [
@@ -284,21 +233,6 @@ in {
   systemd.services.dovecot = {
     after = [ "postfix-setup.service" ];
     wants = [ "postfix-setup.service" ];
-    serviceConfig.RuntimeDirectory = [ "kore-mail" ];
-    preStart = lib.mkAfter (''
-      install -m 0440 -g ${config.services.dovecot2.settings.default_internal_group} /dev/null ${devicesFile}
-    '' + lib.concatStrings (lib.mapAttrsToList (name: identity: let
-      local = builtins.head (lib.splitString "@" identity.email);
-    in ''
-      sed 's/#.*//' ${config.sops.secrets."mail/${name}/devices".path} | while read -r device hash rest; do
-        [ -n "$device" ] || continue
-        if [[ ! "$device" =~ ^[a-z0-9][a-z0-9-]*$ || "$hash" != '$'* || -n "$rest" ]]; then
-          echo "kore-mail: invalid device line for ${name}" >&2
-          exit 1
-        fi
-        echo "${local}+$device@${domain}:{CRYPT}$hash::::${root}/${name}::user=${identity.email}" >> ${devicesFile}
-      done
-    '') mailboxes));
   };
 
   systemd.tmpfiles.rules = [ "d ${root} 0700 vmail vmail -" ];
@@ -309,6 +243,5 @@ in {
     "/var/lib/postfix"
     "/var/lib/dovecot"
     "/var/lib/rspamd"
-    "/var/lib/redis-rspamd"
   ];
 }

@@ -7,7 +7,8 @@ let
   host = osConfig.kore.domains.mail;
   local = builtins.head (lib.splitString "@" identity.email);
   userName = "${local}+${hostName}@${domain}";
-  secret = osConfig.sops.secrets."mail/${user}".path;
+  secretName = "mail/${user}/devices/${hostName}";
+  secret = osConfig.sops.secrets.${secretName}.path;
   c = outputs.palette.colors;
 
   mail-watch = pkgs.writers.writePython3Bin "mail-watch" { doCheck = false; } ''
@@ -32,13 +33,22 @@ let
         os.replace(path + ".tmp", path)
 
 
-    def notify(msg):
+    def clean(text, limit):
+        text = "".join(ch for ch in str(text) if ch.isprintable())
+        return text[:limit]
+
+
+    def notify(text):
+        subprocess.run(["${pkgs.libnotify}/bin/notify-send", "-a", "mail", "-c", "email.arrived", text])
+
+
+    def describe(msg):
         sender = "unknown"
         if msg["From"] is not None and msg["From"].addresses:
             address = msg["From"].addresses[0]
             sender = address.display_name or address.addr_spec
         subject = msg["Subject"] or "(no subject)"
-        subprocess.run(["${pkgs.libnotify}/bin/notify-send", "-a", "mail", "-c", "email.arrived", f"✉ {sender} · {subject}"])
+        return f"✉ {clean(sender, 40)} · {clean(subject, 80)}"
 
 
     def check(imap):
@@ -47,10 +57,14 @@ let
         unseen = set(data[0].split())
         write_unread(len(unseen))
         if seen is not None:
-            for uid in sorted(unseen - seen, key=int):
-                _, data = imap.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT)])")
-                raw = next(part[1] for part in data if isinstance(part, tuple))
-                notify(email.message_from_bytes(raw, policy=email.policy.default))
+            new = sorted(unseen - seen, key=int)
+            if len(new) > 3:
+                notify(f"✉ {len(new)} new mail")
+            else:
+                for uid in new:
+                    _, data = imap.uid("FETCH", uid, "(BODY.PEEK[HEADER.FIELDS (FROM SUBJECT)])")
+                    raw = next(part[1] for part in data if isinstance(part, tuple))
+                    notify(describe(email.message_from_bytes(raw, policy=email.policy.default)))
         seen = unseen
 
 
@@ -71,6 +85,8 @@ let
             time.sleep(30)
   '';
 in {
+  kore.secrets = [ secretName ];
+
   accounts.email.accounts.${user} = {
     primary = true;
     address = identity.email;

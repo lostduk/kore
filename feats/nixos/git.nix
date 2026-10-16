@@ -32,7 +32,7 @@ let
     cat > /dev/null
     url=$(${pkgs.git}/bin/git config --get kore.mirror) || exit 0
     export GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh -i ${mirrorKey} -o IdentitiesOnly=yes -o BatchMode=yes -o StrictHostKeyChecking=yes"
-    if ${pkgs.git}/bin/git push --mirror --quiet "$url"; then
+    if ${pkgs.coreutils}/bin/timeout 60 ${pkgs.git}/bin/git push --mirror --quiet "$url"; then
       echo "kore-git: mirrored to $url"
     else
       echo "kore-git: mirror to $url failed" >&2
@@ -104,7 +104,7 @@ let
   members = lib.unique (lib.concatLists (lib.mapAttrsToList (_: access: access.write ++ access.read) repos));
 in {
   assertions = [{
-    assertion = lib.elem "web" config.kore.currentHost.roles;
+    assertion = lib.elem "web" config.kore.currentHost.feats.nixos;
     message = "kore: the git role needs the web role for petal";
   }];
 
@@ -166,8 +166,33 @@ in {
   services.fcgiwrap.instances.petal = {
     process.user = "petal";
     process.group = "git";
+    process.prefork = 3;
     socket.user = config.services.nginx.user;
     socket.group = config.services.nginx.group;
+  };
+
+  systemd.services.fcgiwrap-petal.serviceConfig = {
+    CapabilityBoundingSet = "";
+    IPAddressDeny = "any";
+    LockPersonality = true;
+    NoNewPrivileges = true;
+    PrivateDevices = true;
+    PrivateTmp = true;
+    ProtectClock = true;
+    ProtectControlGroups = true;
+    ProtectHome = true;
+    ProtectHostname = true;
+    ProtectKernelLogs = true;
+    ProtectKernelModules = true;
+    ProtectKernelTunables = true;
+    ProtectProc = "invisible";
+    ProtectSystem = "strict";
+    RestrictAddressFamilies = [ "AF_UNIX" ];
+    RestrictNamespaces = true;
+    RestrictRealtime = true;
+    RestrictSUIDSGID = true;
+    SystemCallArchitectures = "native";
+    SystemCallFilter = [ "@system-service" "~@privileged" ];
   };
 
   services.nginx.virtualHosts.${config.kore.domains.git} = {

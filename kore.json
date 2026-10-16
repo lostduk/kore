@@ -1,24 +1,37 @@
 {
+  "domain": "lostduk.com",
   "identities": {
     "lostduk": {
       "email": "hi@lostduk.com",
-      "gpg": "0x024E39A2037D1BBC"
+      "gpg": "0x024E39A2037D1BBC",
+      "devices": ["peony"]
     }
   },
   "hosts": {
     "iris": {
       "system": "x86_64-linux",
       "stateVersion": "26.11",
-      "roles": ["web", "git", "mail"],
       "users": ["lostduk"],
-      "ipv4": "82.153.138.53"
+      "ipv4": "82.153.138.53",
+      "feats": {
+        "nixos": ["web", "git", "mail"],
+        "home": []
+      }
     },
     "peony": {
       "system": "x86_64-linux",
       "stateVersion": "26.11",
-      "roles": ["home", "desktop"],
       "users": ["lostduk"],
-      "ipv4": null
+      "ipv4": null,
+      "feats": {
+        "nixos": ["desktop"],
+        "home": [
+          "gpg", "ssh", "git", "nvim", "bash", "tmux", "aerc",
+          "xdg", "firefox", "vesktop", "gtk",
+          "dwl", "foot", "wbg", "mako", "swaylock", "swayidle",
+          "secrets"
+        ]
+      }
     }
   },
   "repos": {

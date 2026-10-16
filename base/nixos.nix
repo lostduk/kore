@@ -1,4 +1,4 @@
-{ inputs, outputs, config, lib, pkgs, utils, modulesPath, ... }:
+{ inputs, outputs, config, lib, pkgs, utils, modulesPath, kore, ... }:
 
 let
   impermanence = config.kore.impermanence.enable;
@@ -9,6 +9,7 @@ let
 in {
   imports = [
     inputs.impermanence.nixosModules.impermanence
+    inputs.sops-nix.nixosModules.sops
 
     ( modulesPath + "/profiles/minimal.nix" )
   ];
@@ -53,7 +54,6 @@ in {
       keep-derivations = false;
       auto-optimise-store = true;
 
-      trusted-users = [ "root" "@wheel" ];
       experimental-features = [ "nix-command" "flakes" ];
     };
 
@@ -89,7 +89,7 @@ in {
   };
 
   networking = {
-    domain = "lostduk.com";
+    inherit (kore) domain;
 
     useDHCP = lib.mkDefault true;
     enableIPv6 = lib.mkForce false;
@@ -105,8 +105,6 @@ in {
   networking.dhcpcd.extraConfig = "nohook resolv.conf";
 
   services = {
-    pcscd.enable = true;
-
     resolved = {
       enable = true;
 
@@ -125,8 +123,9 @@ in {
 
     openssh = {
       enable = lib.mkDefault true;
+      authorizedKeysInHomedir = false;
       settings = {
-        PermitRootLogin = "no";
+        PermitRootLogin = "prohibit-password";
         PasswordAuthentication = false;
         KbdInteractiveAuthentication = false;
       };
@@ -140,18 +139,10 @@ in {
   security = {
     protectKernelImage = true;
 
-    audit = {
-      enable = true;
-      rules = [ "-a exit,always -F arch=b64 -S execve" ];
-    };
-
     sudo = {
       execWheelOnly = true;
       wheelNeedsPassword = lib.mkForce true;
     };
-
-    auditd.enable = true;
-    pam.sshAgentAuth.enable = true;
   };
 
   users = {
@@ -220,16 +211,11 @@ in {
   environment = {
     defaultPackages = lib.mkForce [];
 
-    etc = lib.mkIf (!config.services.openssh.enable) (lib.mapAttrs' (name: user:
-      lib.nameValuePair "ssh/authorized_keys.d/${name}" {
-        mode = "0444";
-        text = lib.concatLines user.openssh.authorizedKeys.keys;
-      }) (lib.filterAttrs (_: user: user.openssh.authorizedKeys.keys != []) config.users.users));
-
     persistence."/persist" = {
       enable = impermanence;
       hideMounts = false;
 
+      files = [ "/etc/machine-id" ];
       directories = [
         "/srv"
         "/var/log"

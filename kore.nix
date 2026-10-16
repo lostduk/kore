@@ -3,13 +3,13 @@
 let
   cfg = config.kore;
   hostname = config.networking.hostName;
-  hasHome = lib.elem "home" cfg.currentHost.roles;
-  hostKey = name: ../../keys/hosts + "/${name}.pub";
+  hasHome = cfg.currentHost.feats.home != [];
+  hostKey = name: ./keys/hosts + "/${name}.pub";
 
   identityOptions = { name, ... }:
     let
-      dir = ../../keys/identities + "/${name}";
-      sshDir = dir + "/ssh";
+      dir = ./keys/user + "/${name}";
+      sshDir = dir;
       gpgFile = dir + "/gpg.asc";
 
       sshFiles = lib.optionals (builtins.pathExists sshDir)
@@ -32,6 +32,10 @@ let
           type = types.nullOr types.path;
           default = if builtins.pathExists gpgFile then gpgFile else null;
         };
+        devices = mkOption {
+          type = types.listOf types.str;
+          default = [];
+        };
       };
     };
 
@@ -42,9 +46,15 @@ let
     stateVersion = mkOption {
       type = types.str;
     };
-    roles = mkOption {
-      type = types.listOf types.str;
-      default = [];
+    feats = {
+      nixos = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
+      home = mkOption {
+        type = types.listOf types.str;
+        default = [];
+      };
     };
     users = mkOption {
       type = types.listOf types.str;
@@ -89,7 +99,7 @@ let
   };
 
   hostNames = name: host:
-    let names = [ name ] ++ map (role: roleDomains.${role}) (lib.filter (role: roleDomains ? ${role}) host.roles);
+    let names = [ name ] ++ map (role: roleDomains.${role}) (lib.filter (role: roleDomains ? ${role}) host.feats.nixos);
     in map (n: "${n}.${config.networking.domain}") names ++ names;
 in {
   options.kore = with lib; {
@@ -109,11 +119,26 @@ in {
       default = {};
     };
 
+    admin = mkOption {
+      type = types.str;
+      default = builtins.head cfg.currentHost.users;
+      readOnly = true;
+    };
+
+    mailboxes = mkOption {
+      type = types.attrsOf types.str;
+      default = lib.mapAttrs (_: identity: identity.email) (lib.filterAttrs (_: identity:
+        identity.email != null && lib.hasSuffix "@${config.networking.domain}" identity.email
+      ) cfg.identities);
+      readOnly = true;
+    };
+
     domains = mkOption {
       type = types.attrsOf types.str;
       default = lib.mapAttrs (_: sub: "${sub}.${config.networking.domain}") roleDomains;
       readOnly = true;
     };
+
 
     impermanence.enable = mkOption {
       type = types.bool;
@@ -145,8 +170,10 @@ in {
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;
 
+    sops.defaultSopsFile = ./secrets.yaml;
+    services.openssh.generateHostKeys = true;
+
     sops.secrets = lib.listToAttrs (map (user: lib.nameValuePair "users/${user}/password" {
-      sopsFile = ../../secrets/global.yaml;
       neededForUsers = true;
     }) cfg.currentHost.users);
 
@@ -162,7 +189,9 @@ in {
       subGidRanges = [{ startGid = 100000 + i * 65536; count = 65536; }];
 
       openssh.authorizedKeys.keys = cfg.identities.${user}.sshKeys or [];
-    }) cfg.currentHost.users);
+    }) cfg.currentHost.users) // {
+      root.openssh.authorizedKeys.keys = cfg.identities.${cfg.admin}.sshKeys;
+    };
 
     # /etc/hosts so machines resolve each other by name.
     networking.hosts = lib.mkMerge (lib.mapAttrsToList (name: host:

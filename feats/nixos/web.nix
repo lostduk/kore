@@ -2,7 +2,7 @@
 
 let
   inherit (config.networking) domain;
-  admin = builtins.head config.kore.currentHost.users;
+  inherit (config.kore) admin;
 in {
   security.acme = {
     acceptTerms = true;
@@ -16,6 +16,16 @@ in {
     recommendedOptimisation = true;
     recommendedGzipSettings = true;
     recommendedProxySettings = true;
+
+    appendHttpConfig = ''
+      add_header Strict-Transport-Security "max-age=63072000" always;
+    '';
+
+    virtualHosts."_" = {
+      default = true;
+      rejectSSL = true;
+      extraConfig = "return 444;";
+    };
 
     virtualHosts.${domain} = {
       enableACME = true;
