@@ -11,8 +11,8 @@ in {
     readOnly = true;
   };
 
-  config = lib.mkIf config.kore.secrets.enable {
-    sops.defaultSopsFile = hostFile;
+  config = {
+    sops.defaultSopsFile = lib.mkIf config.kore.secrets.enable hostFile;
     services.openssh.generateHostKeys = true;
   };
 }
