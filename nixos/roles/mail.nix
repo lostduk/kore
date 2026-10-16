@@ -21,6 +21,8 @@ let
     "${name}@${domain} ${adminEmail}\n"
   ) [ "postmaster" "abuse" "dmarc" ]);
 
+  devicesFile = "/run/kore-mail/devices";
+
   aliasMap = "/var/lib/postfix/conf/kore-aliases";
   aliasMaps = [ "texthash:${roleMap}" "texthash:${aliasMap}" ];
 
@@ -43,6 +45,7 @@ in {
   sops.secrets = lib.concatMapAttrs (name: _: {
     "mail/${name}/password" = {};
     "mail/${name}/aliases".restartUnits = [ "postfix-setup.service" "postfix.service" ];
+    "mail/${name}/devices".restartUnits = [ "dovecot.service" ];
   }) mailboxes;
 
   sops.templates.kore-mail-passwd = {
@@ -183,9 +186,14 @@ in {
 
       auth_mechanisms = [ "plain" "login" ];
       auth_username_format = "%{user | lower}";
+      auth_username_chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ01234567890.-_@+";
 
       "passdb passwd-file".passwd_file_path = config.sops.templates.kore-mail-passwd.path;
       "userdb passwd-file".passwd_file_path = config.sops.templates.kore-mail-passwd.path;
+      "passdb devices" = {
+        driver = "passwd-file";
+        passwd_file_path = devicesFile;
+      };
 
       "namespace inbox" = {
         inbox = true;
@@ -233,6 +241,21 @@ in {
   systemd.services.dovecot = {
     after = [ "postfix-setup.service" ];
     wants = [ "postfix-setup.service" ];
+    serviceConfig.RuntimeDirectory = [ "kore-mail" ];
+    preStart = lib.mkAfter (''
+      install -m 0440 -g ${config.services.dovecot2.settings.default_internal_group} /dev/null ${devicesFile}
+    '' + lib.concatStrings (lib.mapAttrsToList (name: identity: let
+      local = builtins.head (lib.splitString "@" identity.email);
+    in ''
+      sed 's/#.*//' ${config.sops.secrets."mail/${name}/devices".path} | while read -r device hash rest; do
+        [ -n "$device" ] || continue
+        if [[ ! "$device" =~ ^[a-z0-9][a-z0-9-]*$ || "$hash" != '$'* || -n "$rest" ]]; then
+          echo "kore-mail: invalid device line for ${name}" >&2
+          exit 1
+        fi
+        echo "${local}+$device@${domain}:{CRYPT}$hash::::${root}/${name}::user=${identity.email}" >> ${devicesFile}
+      done
+    '') mailboxes));
   };
 
   systemd.tmpfiles.rules = [ "d ${root} 0700 vmail vmail -" ];

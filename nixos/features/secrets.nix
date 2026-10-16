@@ -5,5 +5,14 @@ let
 in {
   imports = [ inputs.sops-nix.nixosModules.sops ];
 
-  sops.defaultSopsFile = lib.mkIf (builtins.pathExists hostFile) hostFile;
+  options.kore.secrets.enable = lib.mkOption {
+    type = lib.types.bool;
+    default = builtins.pathExists hostFile;
+    readOnly = true;
+  };
+
+  config = lib.mkIf config.kore.secrets.enable {
+    sops.defaultSopsFile = hostFile;
+    services.openssh.generateHostKeys = true;
+  };
 }
