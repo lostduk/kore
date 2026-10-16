@@ -3,7 +3,6 @@
 let
   impermanence = config.kore.impermanence.enable;
   rollback = impermanence && config ? disko && config.disko.devices.disk ? main;
-  wsl = config ? wsl && config.wsl.enable;
 
   rootDevice = config.fileSystems."/".device;
   rootUnit = "${utils.escapeSystemdPath rootDevice}.device";
@@ -103,12 +102,12 @@ in {
     };
   };
 
-  networking.dhcpcd.extraConfig = lib.mkIf (!wsl) "nohook resolv.conf";
+  networking.dhcpcd.extraConfig = "nohook resolv.conf";
 
   services = {
     pcscd.enable = true;
 
-    resolved = lib.mkIf (!wsl) {
+    resolved = {
       enable = true;
 
       settings.Resolve = {
