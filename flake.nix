@@ -9,6 +9,9 @@
 
     disko.url = "github:nix-community/disko";
     disko.inputs.nixpkgs.follows = "nixpkgs";
+
+    sops-nix.url = "github:Mic92/sops-nix";
+    sops-nix.inputs.nixpkgs.follows = "nixpkgs";
     
     home-manager.url = "sourcehut:~rycee/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";

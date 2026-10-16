@@ -1,0 +1,12 @@
+keys:
+  - &lostduk 3921E06978AE217C439A0AB26A3CD2A8D2346BB1
+  - &iris age1mjsdyspv685493z43cwcxt9ldug5dmgf5fcxhhswt7q5ts96dv6sadqemh
+creation_rules:
+  - path_regex: ^secrets/global\.yaml$
+    key_groups:
+      - pgp: [*lostduk]
+        age: [*iris]
+  - path_regex: ^secrets/iris\.yaml$
+    key_groups:
+      - pgp: [*lostduk]
+        age: [*iris]

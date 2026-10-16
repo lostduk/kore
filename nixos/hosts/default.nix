@@ -6,6 +6,7 @@ let
     modules = [
       ../features/global.nix
       ../features/kore.nix
+      ../features/secrets.nix
 
       ./${hostname}.nix
 
