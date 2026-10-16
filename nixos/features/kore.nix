@@ -50,10 +50,6 @@ let
       type = types.listOf types.str;
       default = [];
     };
-    aliases = mkOption {
-      type = types.listOf types.str;
-      default = [];
-    };
     ipv4 = mkOption {
       type = types.nullOr types.str;
       default = null;
@@ -87,8 +83,13 @@ let
     };
   };
 
+  roleDomains = {
+    git = "git";
+    mail = "mail";
+  };
+
   hostNames = name: host:
-    let names = [ name ] ++ host.aliases;
+    let names = [ name ] ++ map (role: roleDomains.${role}) (lib.filter (role: roleDomains ? ${role}) host.roles);
     in map (n: "${n}.${config.networking.domain}") names ++ names;
 in {
   options.kore = with lib; {
@@ -106,6 +107,12 @@ in {
     repos = mkOption {
       type = types.attrsOf (types.submodule [{ options = repoOptions; }]);
       default = {};
+    };
+
+    domains = mkOption {
+      type = types.attrsOf types.str;
+      default = lib.mapAttrs (_: sub: "${sub}.${config.networking.domain}") roleDomains;
+      readOnly = true;
     };
 
     impermanence.enable = mkOption {
@@ -138,9 +145,14 @@ in {
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;
 
+    sops.secrets = lib.listToAttrs (map (user: lib.nameValuePair "users/${user}/password" {
+      sopsFile = ../../secrets/global.yaml;
+      neededForUsers = true;
+    }) cfg.currentHost.users);
+
     users.users = lib.listToAttrs (lib.imap0 (i: user: lib.nameValuePair user {
       isNormalUser = true;
-      hashedPassword = "$y$j9T$xSYrV.FXawYKf8Rv4NZgf/$OPy/j7bs2K5izJ/zHtY9Trp0JW6jF46868LqB.gjKQ5";
+      hashedPasswordFile = config.sops.secrets."users/${user}/password".path;
       extraGroups = [ "wheel" ];
 
       createHome = hasHome;

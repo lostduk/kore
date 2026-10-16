@@ -170,7 +170,7 @@ in {
     socket.group = config.services.nginx.group;
   };
 
-  services.nginx.virtualHosts."git.${domain}" = {
+  services.nginx.virtualHosts.${config.kore.domains.git} = {
     enableACME = true;
     forceSSL = true;
 

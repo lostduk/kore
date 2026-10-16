@@ -1,3 +1,5 @@
+{ osConfig, ... }:
+
 {
   programs.ssh = {
     enable = true;
@@ -26,7 +28,7 @@
       };
 
       ld = {
-        HostName = "git.lostduk.com";
+        HostName = osConfig.kore.domains.git;
         User = "git";
       };
     };
