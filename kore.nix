@@ -170,7 +170,7 @@ in {
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;
 
-    sops.defaultSopsFile = ./secrets.yaml;
+    sops.defaultSopsFile = ./secrets/global.yaml;
     services.openssh.generateHostKeys = true;
 
     sops.secrets = lib.listToAttrs (map (user: lib.nameValuePair "users/${user}/password" {

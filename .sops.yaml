@@ -4,7 +4,7 @@ keys:
   - &peony age1shx0y69vr57yqtjelec6q0k6pvhlxffz48hww59l4an0mlqyw4jqgvkug3
 
 creation_rules:
-  - path_regex: ^secrets\.yaml$
+  - path_regex: ^secrets/global\.yaml$
     key_groups:
       - pgp: [*lostduk]
         age: [*iris, *peony]

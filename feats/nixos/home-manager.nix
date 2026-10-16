@@ -15,7 +15,7 @@ in {
     extraSpecialArgs = { inherit inputs outputs; };
 
     users = lib.genAttrs users
-      (_: { imports = [ ./home.nix ] ++ map (feat: ../feats/home/${feat}.nix) config.kore.currentHost.feats.home; });
+      (_: { imports = [ ../home/base.nix ] ++ map (feat: ../home/${feat}.nix) config.kore.currentHost.feats.home; });
   };
 
   sops.secrets = lib.mkMerge (map (user:

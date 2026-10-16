@@ -27,13 +27,13 @@
       mkSystem = hostname: host: lib.nixosSystem {
         specialArgs = { inherit inputs outputs kore; };
         modules = [
-          ./base/nixos.nix
+          ./feats/nixos/base.nix
           ./kore.nix
 
           ./hosts/${hostname}.nix
 
           { networking.hostName = hostname; }
-        ] ++ lib.optional (host.feats.home or [] != []) ./base/home-manager.nix
+        ] ++ lib.optional (host.feats.home or [] != []) ./feats/nixos/home-manager.nix
           ++ map (feat: ./feats/nixos/${feat}.nix) (host.feats.nixos or []);
       };
     in {
@@ -41,18 +41,23 @@
 
       nixosConfigurations = lib.mapAttrs mkSystem kore.hosts;
 
-      checks.x86_64-linux.secrets = let
+      checks.x86_64-linux = let
         pkgs = nixpkgs.legacyPackages.x86_64-linux;
-      in pkgs.runCommand "kore-secrets" { nativeBuildInputs = [ pkgs.ssh-to-age ]; } ''
-        for host in ${lib.concatStringsSep " " (lib.attrNames kore.hosts)}; do
-          key=${./keys/hosts}/$host.pub
-          [ -f "$key" ] || { echo "kore: keys/hosts/$host.pub is missing"; exit 1; }
-          age=$(ssh-to-age -i "$key")
-          grep -q "$age" ${./.sops.yaml} || { echo "kore: $host ($age) is missing from .sops.yaml"; exit 1; }
-          grep -q "recipient: $age" ${./secrets.yaml} || { echo "kore: secrets.yaml is not encrypted to $host, run: sops updatekeys secrets.yaml"; exit 1; }
-        done
-        touch $out
-      '';
+        hosts = lib.filterAttrs (_: host: host.system == "x86_64-linux") kore.hosts;
+      in lib.mapAttrs' (name: _:
+        lib.nameValuePair "host-${name}" self.nixosConfigurations.${name}.config.system.build.toplevel
+      ) hosts // {
+        secrets = pkgs.runCommand "kore-secrets" { nativeBuildInputs = [ pkgs.ssh-to-age ]; } ''
+          for host in ${lib.concatStringsSep " " (lib.attrNames kore.hosts)}; do
+            key=${./keys/hosts}/$host.pub
+            [ -f "$key" ] || { echo "kore: keys/hosts/$host.pub is missing"; exit 1; }
+            age=$(ssh-to-age -i "$key")
+            grep -q "$age" ${./.sops.yaml} || { echo "kore: $host ($age) is missing from .sops.yaml"; exit 1; }
+            grep -q "recipient: $age" ${./secrets/global.yaml} || { echo "kore: secrets/global.yaml is not encrypted to $host, run: sops updatekeys secrets/global.yaml"; exit 1; }
+          done
+          touch $out
+        '';
+      };
 
       overlays = import ./overlays { inherit inputs outputs; };
     };
