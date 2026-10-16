@@ -35,6 +35,9 @@ in {
 
   environment.loginShellInit = ''
     if [ -z "$WAYLAND_DISPLAY" ] && [ "$(tty)" = /dev/tty1 ]; then
+      if [ -f "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh" ]; then
+        . "/etc/profiles/per-user/$USER/etc/profile.d/hm-session-vars.sh"
+      fi
       /etc/xdg/dwl-session
       systemctl --user stop dwl-session.target
       exit
