@@ -4,7 +4,7 @@ let
   user = config.home.username;
   identity = osConfig.kore.identities.${user};
   inherit (osConfig.networking) domain hostName;
-  host = "mail.${domain}";
+  host = osConfig.kore.domains.mail;
   local = builtins.head (lib.splitString "@" identity.email);
   userName = "${local}+${hostName}@${domain}";
   secret = osConfig.sops.secrets."mail/${user}".path;

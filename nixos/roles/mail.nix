@@ -3,7 +3,7 @@
 let
   inherit (config.networking) domain;
   inherit (config.sops) placeholder;
-  fqdn = "mail.${domain}";
+  fqdn = config.kore.domains.mail;
   root = "/srv/mail";
   cert = config.security.acme.certs.${fqdn}.directory;
   admin = builtins.head config.kore.currentHost.users;
@@ -33,6 +33,26 @@ let
       stop;
     }
   '';
+
+  learnSpam = pkgs.writeText "learn-spam.sieve" ''
+    require ["vnd.dovecot.pipe", "copy", "imapsieve"];
+    pipe :copy "learn-spam";
+  '';
+
+  learnHam = pkgs.writeText "learn-ham.sieve" ''
+    require ["vnd.dovecot.pipe", "copy", "imapsieve", "environment", "variables"];
+    if environment :matches "imap.mailbox" "*" {
+      set "mailbox" "''${1}";
+    }
+    if string "''${mailbox}" "Trash" {
+      stop;
+    }
+    pipe :copy "learn-ham";
+  '';
+
+  learn = kind: lib.getExe (pkgs.writeShellScriptBin "learn-${kind}" ''
+    exec ${config.services.rspamd.package}/bin/rspamc learn_${kind}
+  '');
 in {
   assertions = [{
     assertion = lib.elem "web" config.kore.currentHost.roles;
@@ -121,6 +141,9 @@ in {
       "redis.conf".text = ''
         servers = "${config.services.redis.servers.rspamd.unixSocket}";
       '';
+      "classifier-bayes.conf".text = ''
+        autolearn = true;
+      '';
       "dkim_signing.conf".text = ''
         try_fallback = false;
         allow_username_mismatch = true;
@@ -165,6 +188,7 @@ in {
 
   services.dovecot2 = {
     enable = true;
+    sieve.pipeBins = [ (learn "spam") (learn "ham") ];
     settings = {
       dovecot_config_version = "2.4.0";
       dovecot_storage_version = "2.4.0";
@@ -201,16 +225,35 @@ in {
         mailbox = [
           { _section.name = "Drafts"; special_use = "\\Drafts"; auto = "subscribe"; }
           { _section.name = "Sent"; special_use = "\\Sent"; auto = "subscribe"; }
-          { _section.name = "Junk"; special_use = "\\Junk"; auto = "subscribe"; }
+          {
+            _section.name = "Junk";
+            special_use = "\\Junk";
+            auto = "subscribe";
+            "sieve_script learn-spam" = {
+              type = "before";
+              cause = "copy";
+              path = learnSpam;
+            };
+          }
           { _section.name = "Trash"; special_use = "\\Trash"; auto = "subscribe"; }
           { _section.name = "Archive"; special_use = "\\Archive"; auto = "subscribe"; }
         ];
       };
 
-      "protocol lmtp".mail_plugins.sieve = true;
-      "sieve_script spam" = {
+      "protocol lmtp" = {
+        mail_plugins.sieve = true;
+        "sieve_script spam" = {
+          type = "before";
+          path = spamSieve;
+        };
+      };
+
+      "protocol imap".mail_plugins.imap_sieve = true;
+      sieve_plugins.sieve_imapsieve = true;
+      "imapsieve_from Junk"."sieve_script learn-ham" = {
         type = "before";
-        path = spamSieve;
+        cause = "copy";
+        path = learnHam;
       };
 
       service = [
