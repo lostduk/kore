@@ -42,7 +42,7 @@
     },
     "greenhouse": {
       "write": ["lostduk"],
-      "description": "forge suite"
+      "description": "minimal software forge"
     }
   },
   "lists": {
