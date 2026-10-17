@@ -70,7 +70,10 @@ let
 
     postPatch = ''
       cp config.def.h config.h
-      substituteInPlace config.h --replace-fail '"git-shell"' '"${pkgs.git}/bin/git-shell"'
+      substituteInPlace config.h \
+        --replace-fail '"/srv/git"' '"${root}"' \
+        --replace-fail '"/etc/hedge/acl"' '"${acl}"' \
+        --replace-fail '"git-shell"' '"${pkgs.git}/bin/git-shell"'
     '';
 
     makeFlags = [
@@ -78,6 +81,11 @@ let
       "CC=${pkgs.stdenv.cc.targetPrefix}cc"
     ];
   };
+
+  petalCgi = pkgs.writeShellScript "petal-cgi" ''
+    ulimit -t 10
+    exec ${petal}/bin/petal
+  '';
 
   members = lib.unique (lib.concatLists (lib.mapAttrsToList (_: access: access.write ++ access.read) repos));
 in {
@@ -96,7 +104,7 @@ in {
     shell = pkgs.bash;
 
     openssh.authorizedKeys.keys = lib.concatMap (id:
-      map (key: ''command="${hedge}/bin/hedge -a ${acl} -r ${root} ${id}",restrict ${key}'') (identities.${id}.sshKeys or [])
+      map (key: ''command="${hedge}/bin/hedge ${id}",restrict ${key}'') (identities.${id}.sshKeys or [])
     ) members;
   };
 
@@ -181,7 +189,7 @@ in {
     locations."= /icon.svg".alias = "${petal}/share/petal/icon.svg";
 
     locations."/".extraConfig = fastcgi + ''
-      fastcgi_param SCRIPT_FILENAME ${petal}/bin/petal;
+      fastcgi_param SCRIPT_FILENAME ${petalCgi};
       fastcgi_param SCRIPT_NAME "";
       fastcgi_param PATH_INFO $uri;
     '';

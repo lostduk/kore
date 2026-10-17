@@ -45,6 +45,11 @@ let
     ];
   };
 
+  herbariumCgi = pkgs.writeShellScript "herbarium-cgi" ''
+    ulimit -t 10
+    exec ${herbarium}/bin/herbarium
+  '';
+
   owner = opts: identities.${if opts.owner != null then opts.owner else admin}.email;
 
   recipientMap = pkgs.writeText "kore-lists" (lib.concatMapStrings (list:
@@ -144,7 +149,7 @@ in {
       fastcgi_param SERVER_PROTOCOL $server_protocol;
       fastcgi_param REQUEST_METHOD $request_method;
       fastcgi_param QUERY_STRING $query_string;
-      fastcgi_param SCRIPT_FILENAME ${herbarium}/bin/herbarium;
+      fastcgi_param SCRIPT_FILENAME ${herbariumCgi};
       fastcgi_param SCRIPT_NAME "";
       fastcgi_param PATH_INFO $uri;
       fastcgi_pass unix:${config.services.fcgiwrap.instances.herbarium.socket.address};
