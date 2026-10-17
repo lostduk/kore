@@ -93,9 +93,33 @@ let
     };
   };
 
+  listOptions = with lib; {
+    description = mkOption {
+      type = types.str;
+      default = "";
+    };
+    owner = mkOption {
+      type = types.nullOr types.str;
+      default = null;
+    };
+    post = mkOption {
+      type = types.enum [ "anyone" "subscribers" "owner" ];
+      default = "subscribers";
+    };
+    subscribe = mkOption {
+      type = types.enum [ "open" "closed" ];
+      default = "open";
+    };
+    private = mkOption {
+      type = types.bool;
+      default = false;
+    };
+  };
+
   roleDomains = {
     git = "git";
     mail = "mail";
+    lists = "lists";
   };
 
   hostNames = name: host:
@@ -116,6 +140,10 @@ in {
     };
     repos = mkOption {
       type = types.attrsOf (types.submodule [{ options = repoOptions; }]);
+      default = {};
+    };
+    lists = mkOption {
+      type = types.attrsOf (types.submodule [{ options = listOptions; }]);
       default = {};
     };
 
@@ -152,6 +180,7 @@ in {
       hosts = kore.hosts;
       currentHost = kore.hosts.${hostname};
       repos = kore.repos or {};
+      lists = kore.lists or {};
     };
 
     assertions = map (user: {
@@ -165,7 +194,14 @@ in {
     }] ++ map (id: {
       assertion = cfg.identities ? ${id};
       message = "kore: repo ${repo} lists ${id}, but kore.json has no identity for it";
-    }) (acl.write ++ acl.read ++ lib.optional (acl.owner != null) acl.owner)) cfg.repos);
+    }) (acl.write ++ acl.read ++ lib.optional (acl.owner != null) acl.owner)) cfg.repos)
+    ++ lib.concatLists (lib.mapAttrsToList (list: opts: [{
+      assertion = builtins.match "[a-z0-9][a-z0-9-]*" list != null && lib.stringLength list <= 64;
+      message = "kore: list name ${list} is invalid";
+    }] ++ lib.optional (opts.owner != null) {
+      assertion = (cfg.identities.${opts.owner}.email or null) != null;
+      message = "kore: list ${list} is owned by ${opts.owner}, but kore.json has no identity with an email for it";
+    }) cfg.lists);
 
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;

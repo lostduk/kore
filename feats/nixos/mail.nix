@@ -99,6 +99,8 @@ in {
       smtp_tls_security_level = "may";
       smtpd_helo_required = true;
       disable_vrfy_command = true;
+      inet_protocols = "ipv4";
+      internal_mail_filter_classes = [ "bounce" ];
     };
   };
 

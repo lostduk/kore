@@ -14,7 +14,7 @@
       "users": ["lostduk"],
       "ipv4": "82.153.138.53",
       "feats": {
-        "nixos": ["web", "git", "mail"],
+        "nixos": ["web", "git", "mail", "lists"],
         "home": []
       }
     },
@@ -43,6 +43,12 @@
     "greenhouse": {
       "write": ["lostduk"],
       "description": "forge suite"
+    }
+  },
+  "lists": {
+    "meadow": {
+      "description": "patches and discussion for projects that don't have their own list; subject [project] topic or [project][PATCH]",
+      "post": "anyone"
     }
   }
 }
