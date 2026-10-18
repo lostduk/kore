@@ -18,7 +18,6 @@ static const int smartgaps                 = 0;
 static int gaps                            = 1;
 static const int showbar                   = 1;
 static const int topbar                    = 1;
-static const int barpad                    = 4;
 static const char *fonts[]                 = { "Fantasque Sans Mono:size=11", "Noto Sans Symbols 2:size=13" };
 static const float rootcolor[]             = COLOR(@bg@);
 static const float fullscreen_bg[]         = COLOR(@bg@);

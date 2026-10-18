@@ -75,7 +75,7 @@ diff --git a/dwl.c b/dwl.c
 -				m == selmon && c && c->tags & 1 << i,
 -				urg & 1 << i);
 +		if (sel)
-+			drwl_rect(m->drw, x + m->lrpad / 2, (m->b.height + m->drw->font->height) / 2 - 1, w - m->lrpad, 1, 1, 0);
++			drwl_rect(m->drw, x + m->lrpad / 2, m->b.height - 2, w - m->lrpad, 1, 1, 0);
  		x += w;
  	}
  	w = TEXTW(m, m->ltsymbol);
@@ -107,12 +107,3 @@ diff --git a/dwl.c b/dwl.c
  		arrangelayers(m);
  		/* Don't move clients to the left output when plugging monitors */
  		arrange(m);
-@@ -3423,7 +3431,7 @@
- 
- 	m->b.scale = m->wlr_output->scale;
- 	m->lrpad = m->drw->font->height;
--	m->b.height = m->drw->font->height + 2;
-+	m->b.height = m->drw->font->height + 2 + 2 * (int)(barpad * m->wlr_output->scale);
- 	m->b.real_height = (int)((float)m->b.height / m->wlr_output->scale);
- }
- 
