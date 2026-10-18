@@ -191,8 +191,8 @@ let
     "network.file.disable_unc_paths" = true;
     "network.dns.preferIPv6" = true;
     "network.trr.mode" = 3;
-    "network.trr.uri" = "https://dns.mullvad.net/dns-query";
-    "network.trr.custom_uri" = "https://dns.mullvad.net/dns-query";
+    "network.trr.uri" = "https://dns.quad9.net/dns-query";
+    "network.trr.custom_uri" = "https://dns.quad9.net/dns-query";
     "network.IDN_show_punycode" = true;
     "network.auth.subresource-http-auth-allow" = 1;
     "network.http.referer.XOriginTrimmingPolicy" = 2;
