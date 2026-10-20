@@ -27,7 +27,7 @@
         "nixos": ["desktop"],
         "home": [
           "gpg", "ssh", "git", "nvim", "bash", "tmux", "aerc",
-          "xdg", "firefox", "vesktop", "gtk",
+          "xdg", "firefox", "vesktop", "continuum", "gtk",
           "dwl", "foot", "wbg", "mako", "swaylock", "swayidle",
           "secrets"
         ]
