@@ -135,7 +135,24 @@
         "home-manager": "home-manager",
         "impermanence": "impermanence",
         "nixpkgs": "nixpkgs_2",
+        "sites": "sites",
         "sops-nix": "sops-nix"
+      }
+    },
+    "sites": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1792768421,
+        "narHash": "sha256-8/sykuUubEOnCuNpl4iUs5Squu4M9AM3pDjWEd1KgvI=",
+        "ref": "refs/heads/main",
+        "rev": "5dd5c007cc348542be34c865d04e12306eeceeec",
+        "revCount": 3,
+        "type": "git",
+        "url": "https://git.lostduk.com/sites.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.lostduk.com/sites.git"
       }
     },
     "sops-nix": {

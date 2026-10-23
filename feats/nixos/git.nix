@@ -90,8 +90,8 @@ let
   members = lib.unique (lib.concatLists (lib.mapAttrsToList (_: access: access.write ++ access.read) repos));
 in {
   assertions = [{
-    assertion = lib.elem "web" config.kore.currentHost.feats.nixos;
-    message = "kore: the git role needs the web role for petal";
+    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
+    message = "kore: the git role needs the nginx role for petal";
   }];
 
   users.groups.git = {};

@@ -1,7 +1,6 @@
-{ config, pkgs, ... }:
+{ config, ... }:
 
 let
-  inherit (config.networking) domain;
   inherit (config.kore) admin;
 in {
   security.acme = {
@@ -25,20 +24,6 @@ in {
       default = true;
       rejectSSL = true;
       extraConfig = "return 444;";
-    };
-
-    virtualHosts.${domain} = {
-      enableACME = true;
-      forceSSL = true;
-
-      root = pkgs.writeTextDir "index.html" ''
-        <!doctype html>
-        <html lang="en">
-        <meta charset="utf-8">
-        <title>${domain}</title>
-        <p>soon</p>
-        </html>
-      '';
     };
   };
 

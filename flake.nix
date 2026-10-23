@@ -15,6 +15,9 @@
 
     greenhouse.url = "git+https://git.lostduk.com/greenhouse.git";
     greenhouse.flake = false;
+
+    sites.url = "git+https://git.lostduk.com/sites.git";
+    sites.flake = false;
   };
 
   outputs = inputs@{ self, nixpkgs, ... }:

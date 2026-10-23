@@ -62,8 +62,8 @@ in {
     assertion = lib.elem "mail" config.kore.currentHost.feats.nixos;
     message = "kore: the lists feat needs the mail feat";
   } {
-    assertion = lib.elem "web" config.kore.currentHost.feats.nixos;
-    message = "kore: the lists feat needs the web feat for herbarium";
+    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
+    message = "kore: the lists feat needs the nginx feat for herbarium";
   }];
 
   users.groups.pollen = {};

@@ -36,8 +36,8 @@ let
   '';
 in {
   assertions = [{
-    assertion = lib.elem "web" config.kore.currentHost.feats.nixos;
-    message = "kore: the mail feat needs the web feat for ACME";
+    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
+    message = "kore: the mail feat needs the nginx feat for ACME";
   } {
     assertion = mailboxes ? ${admin};
     message = "kore: mail admin ${admin} needs an email @${domain}";
