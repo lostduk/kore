@@ -142,11 +142,11 @@
     "sites": {
       "flake": false,
       "locked": {
-        "lastModified": 1792769653,
-        "narHash": "sha256-izaSFfLez83UrUhoohpTjLIQOs3u3k/lJhBCAGNR8M0=",
+        "lastModified": 1792783504,
+        "narHash": "sha256-HWD/cpAcD/fEG9qanWT9odiwpWLslVIRzqyYbMo+GP0=",
         "ref": "refs/heads/main",
-        "rev": "f4112a1ca4508dab90280cc9c3f1033869cd1b24",
-        "revCount": 4,
+        "rev": "ab7c6f5f283b79bd035d8765a616b6069d953c57",
+        "revCount": 5,
         "type": "git",
         "url": "https://git.lostduk.com/sites.git"
       },
