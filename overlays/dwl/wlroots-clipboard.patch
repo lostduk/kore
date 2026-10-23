@@ -1,0 +1,15 @@
+--- a/xwayland/xwm.c
++++ b/xwayland/xwm.c
+@@ -448,6 +448,12 @@
+ 	} else {
+ 		xwm_set_net_active_window(xwm, xwm->no_focus_window);
+ 	}
++
++	if (xsurface && !unfocus_surface && xwm->seat) {
++		xwm->seat_set_selection.notify(&xwm->seat_set_selection, xwm->seat);
++		xwm->seat_set_primary_selection.notify(
++			&xwm->seat_set_primary_selection, xwm->seat);
++	}
+ }
+
+ void wlr_xwayland_surface_offer_focus(struct wlr_xwayland_surface *xsurface) {
