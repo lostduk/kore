@@ -137,6 +137,7 @@ in {
       splashBackground = colors.bg;
       splashColor = colors.fg;
       staticTitle = true;
+      disableMinSize = true;
     };
 
     vencord = {
