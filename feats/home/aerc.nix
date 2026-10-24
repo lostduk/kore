@@ -16,6 +16,7 @@ let
     import email.policy
     import imaplib
     import os
+    import ssl
     import subprocess
     import sys
     import time
@@ -72,7 +73,7 @@ let
         try:
             with open(secret) as f:
                 password = f.read().strip()
-            imap = imaplib.IMAP4_SSL(host, timeout=60)
+            imap = imaplib.IMAP4_SSL(host, timeout=60, ssl_context=ssl.create_default_context())
             imap.login(user, password)
             imap.select("INBOX", readonly=True)
             while True:
