@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, outputs, ... }:
 
 let
   dataDir = "${config.xdg.dataHome}/continuum";
@@ -104,6 +104,10 @@ let
 
       launcher="$HOME/.local/share/continuum-launcher"
 
+      ${outputs.jail}
+      jail=()
+      jail_hardware "${dataDir}/.machine-id"
+
       exec bwrap \
         --unshare-all --share-net \
         --die-with-parent --new-session \
@@ -112,7 +116,7 @@ let
         --ro-bind /run/current-system /run/current-system \
         --ro-bind /run/opengl-driver /run/opengl-driver \
         --ro-bind-try /run/systemd/resolve /run/systemd/resolve \
-        --ro-bind /sys /sys \
+        "''${jail[@]}" \
         --proc /proc \
         --dev /dev \
         --tmpfs /dev/shm \

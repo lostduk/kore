@@ -34,6 +34,10 @@ let
 
       mkdir -p "${configDir}" "${downloads}"
 
+      ${outputs.jail}
+      jail=()
+      jail_hardware "${configDir}/machine-id"
+
       bwrap \
         --unshare-all --share-net \
         --die-with-parent --new-session \
@@ -42,7 +46,7 @@ let
         --ro-bind /run/current-system /run/current-system \
         --ro-bind /run/opengl-driver /run/opengl-driver \
         --ro-bind-try /run/systemd/resolve /run/systemd/resolve \
-        --ro-bind /sys /sys \
+        "''${jail[@]}" \
         --proc /proc \
         --dev /dev \
         --dev-bind /dev/dri /dev/dri \

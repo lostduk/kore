@@ -26,6 +26,7 @@
       inherit (nixpkgs) lib;
       kore = lib.importJSON ./kore.json;
       palette = import ./palette.nix;
+      jail = import ./jail.nix;
 
       mkSystem = hostname: host: lib.nixosSystem {
         specialArgs = { inherit inputs outputs kore; };
@@ -40,7 +41,7 @@
           ++ map (feat: ./feats/nixos/${feat}.nix) (host.feats.nixos or []);
       };
     in {
-      inherit kore palette;
+      inherit kore palette jail;
 
       overlays = import ./overlays { inherit inputs outputs; };
 
