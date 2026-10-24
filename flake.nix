@@ -13,6 +13,7 @@
     home-manager.url = "sourcehut:~rycee/home-manager";
     home-manager.inputs.nixpkgs.follows = "nixpkgs";
 
+    # packages
     greenhouse.url = "git+https://git.lostduk.com/greenhouse.git";
     greenhouse.flake = false;
 
