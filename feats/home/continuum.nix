@@ -125,7 +125,7 @@ let
         --tmpfs "$run" \
         --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY" \
         --ro-bind "$run/pipewire-0" "$run/pipewire-0" \
-        --ro-bind "$run/pulse" "$run/pulse" \
+        --ro-bind "$run/pulse/native" "$run/pulse/native" \
         --unsetenv DBUS_SESSION_BUS_ADDRESS \
         --unsetenv SSH_AUTH_SOCK \
         --unsetenv GPG_AGENT_INFO \

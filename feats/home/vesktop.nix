@@ -53,7 +53,7 @@ let
         --tmpfs "$run" \
         --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY" \
         --ro-bind "$run/pipewire-0" "$run/pipewire-0" \
-        --ro-bind "$run/pulse" "$run/pulse" \
+        --ro-bind "$run/pulse/native" "$run/pulse/native" \
         --bind "$bus" "$run/bus" \
         --setenv DBUS_SESSION_BUS_ADDRESS "unix:path=$run/bus" \
         ${lib.getExe vesktop} --ozone-platform-hint=auto "$@"
