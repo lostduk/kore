@@ -1,4 +1,4 @@
-{ inputs, modulesPath, ... }:
+{ inputs, pkgs, modulesPath, ... }:
 
 {
   imports = [
@@ -29,6 +29,15 @@
   hardware = {
     graphics.enable = true;
     cpu.intel.updateMicrocode = true;
+
+    enableRedistributableFirmware = false;
+    firmware = [
+      (pkgs.runCommand "peony-firmware" { } ''
+        cd ${pkgs.linux-firmware}/lib/firmware
+        install -Dm444 -t $out/lib/firmware/amdgpu amdgpu/polaris12_*
+        install -Dm444 -t $out/lib/firmware/rtl_nic rtl_nic/rtl8168h-2.fw
+      '')
+    ];
   };
 
   disko.devices.disk.main = {
