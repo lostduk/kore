@@ -9,6 +9,24 @@
 
   time.timeZone = "Asia/Bangkok";
 
+  networking = {
+    useNetworkd = true;
+    useDHCP = false;
+  };
+  systemd.network.networks."10-ethernet" = {
+    matchConfig.Type = "ether";
+    networkConfig = {
+      DHCP = "ipv4";
+      LinkLocalAddressing = "no";
+      IPv6AcceptRA = false;
+    };
+    dhcpV4Config = {
+      UseDNS = false;
+      UseDomains = false;
+    };
+    linkConfig.RequiredForOnline = "routable";
+  };
+
   boot = {
     kernelModules = [ "kvm-intel" ];
 
