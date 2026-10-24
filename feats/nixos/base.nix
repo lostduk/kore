@@ -106,7 +106,7 @@ in {
 
   services = {
     resolved = {
-      enable = true;
+      enable = lib.mkDefault true;
 
       settings.Resolve = {
         DNS = [
@@ -117,6 +117,8 @@ in {
         Domains = [ "~." ];
         DNSOverTLS = true;
         DNSSEC = false;
+        LLMNR = false;
+        MulticastDNS = false;
       };
     };
 

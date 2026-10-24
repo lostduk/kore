@@ -118,6 +118,20 @@ in {
     '') mailboxes)}
   '';
 
+  services.resolved.enable = false;
+
+  services.unbound = {
+    enable = true;
+    settings.server = {
+      interface = [ "127.0.0.1" ];
+      access-control = [ "127.0.0.0/8 allow" ];
+      do-ip6 = false;
+      prefetch = true;
+      hide-identity = true;
+      hide-version = true;
+    };
+  };
+
   services.rspamd = {
     enable = true;
     postfix.enable = true;
@@ -125,6 +139,7 @@ in {
       socket = "/run/rspamd/controller.sock";
       mode = "0600";
     }];
+    locals."fuzzy_check.conf".text = "enabled = false;";
     locals."dkim_signing.conf".text = ''
       try_fallback = false;
       allow_username_mismatch = true;
