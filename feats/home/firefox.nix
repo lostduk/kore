@@ -196,7 +196,7 @@ let
     "network.IDN_show_punycode" = true;
     "network.auth.subresource-http-auth-allow" = 1;
     "network.http.referer.XOriginTrimmingPolicy" = 2;
-    "network.http.referer.spoofSource" = true;
+    "network.http.referer.spoofSource" = false;
     "network.http.referer.defaultPolicy.trackers" = 1;
     "network.http.referer.defaultPolicy.trackers.pbmode" = 1;
     "beacon.enabled" = false;
