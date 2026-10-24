@@ -97,7 +97,7 @@ let
 
       volt="${dataDir}/.config/volt-linux/client-settings.json"
       if [ -f "$volt" ]; then
-        jq --slurpfile theme ${./continuum/volt-dark.json} '. + $theme[0]' "$volt" > "$volt.new"
+        jq --slurpfile theme ${./volt-dark.json} '. + $theme[0]' "$volt" > "$volt.new"
         chmod --reference="$volt" "$volt.new"
         mv "$volt.new" "$volt"
       fi

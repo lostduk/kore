@@ -25,14 +25,14 @@
       inherit (self) outputs;
       inherit (nixpkgs) lib;
       kore = lib.importJSON ./kore.json;
-      palette = import ./palette.nix;
-      jail = import ./jail.nix;
+      palette = import ./lib/palette.nix;
+      jail = import ./lib/jail.nix;
 
       mkSystem = hostname: host: lib.nixosSystem {
         specialArgs = { inherit inputs outputs kore; };
         modules = [
           ./feats/nixos/base.nix
-          ./kore.nix
+          ./lib/kore.nix
 
           ./hosts/${hostname}.nix
 

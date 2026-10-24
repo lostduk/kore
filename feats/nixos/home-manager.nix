@@ -2,6 +2,9 @@
 
 let
   inherit (config.kore.currentHost) users;
+
+  feat = name: let path = ../home + "/${name}"; in
+    if builtins.pathExists (path + ".nix") then path + ".nix" else path;
 in {
   imports = [ inputs.home-manager.nixosModules.home-manager ];
 
@@ -15,7 +18,7 @@ in {
     extraSpecialArgs = { inherit inputs outputs; };
 
     users = lib.genAttrs users
-      (_: { imports = [ ../home/base.nix ] ++ map (feat: ../home/${feat}.nix) config.kore.currentHost.feats.home; });
+      (_: { imports = [ ../home/base.nix ] ++ map feat config.kore.currentHost.feats.home; });
   };
 
   sops.secrets = lib.mkMerge (map (user:

@@ -26,9 +26,9 @@
       "feats": {
         "nixos": ["desktop"],
         "home": [
-          "gpg", "ssh", "git", "nvim", "bash", "tmux", "aerc",
-          "xdg", "firefox", "vesktop", "continuum", "gtk",
-          "dwl", "foot", "wbg", "mako", "swaylock", "swayidle",
+          "cli/gpg", "cli/ssh", "cli/git", "cli/nvim", "cli/bash", "cli/tmux", "cli/aerc",
+          "desktop/xdg", "apps/firefox", "apps/vesktop", "games/continuum", "desktop/gtk",
+          "desktop/dwl", "desktop/foot", "desktop/wbg", "desktop/mako", "desktop/swaylock", "desktop/swayidle",
           "secrets"
         ]
       }

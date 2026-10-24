@@ -4,11 +4,11 @@ let
   cfg = config.kore;
   hostname = config.networking.hostName;
   hasHome = cfg.currentHost.feats.home != [];
-  hostKey = name: ./keys/hosts + "/${name}.pub";
+  hostKey = name: ../keys/hosts + "/${name}.pub";
 
   identityOptions = { name, ... }:
     let
-      dir = ./keys/user + "/${name}";
+      dir = ../keys/user + "/${name}";
       sshDir = dir;
       gpgFile = dir + "/gpg.asc";
 
@@ -206,7 +206,7 @@ in {
     nixpkgs.hostPlatform = cfg.currentHost.system;
     system.stateVersion = cfg.currentHost.stateVersion;
 
-    sops.defaultSopsFile = ./secrets/global.yaml;
+    sops.defaultSopsFile = ../secrets/global.yaml;
     services.openssh.generateHostKeys = true;
 
     sops.secrets = lib.listToAttrs (map (user: lib.nameValuePair "users/${user}/password" {
