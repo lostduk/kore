@@ -47,6 +47,14 @@
     "sites": {
       "write": ["lostduk"],
       "description": "websites"
+    },
+    "mii": {
+      "write": ["lostduk"],
+      "description": "IMAP mailbox as files"
+    },
+    "lmc": {
+      "write": ["lostduk"],
+      "description": "lost mail client"
     }
   },
   "lists": {
