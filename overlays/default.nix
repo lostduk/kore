@@ -6,7 +6,8 @@
       pname = name;
       version = "0-${inputs.greenhouse.shortRev or "dirty"}";
 
-      src = "${inputs.greenhouse}/${name}";
+      src = inputs.greenhouse;
+      setSourceRoot = "sourceRoot=$(echo */${name})";
 
       postPatch = final.lib.optionalString (replace != {}) ''
         cp config.def.h config.h
