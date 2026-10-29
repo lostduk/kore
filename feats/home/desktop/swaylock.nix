@@ -1,7 +1,7 @@
-{ lib, outputs, ... }:
+{ outputs, ... }:
 
 let
-  c = lib.mapAttrs (_: lib.removePrefix "#") outputs.palette.colors;
+  c = outputs.palette.hex;
 in {
   programs.swaylock = {
     enable = true;

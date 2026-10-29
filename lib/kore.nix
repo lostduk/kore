@@ -6,146 +6,63 @@ let
   hasHome = cfg.currentHost.feats.home != [];
   hostKey = name: ../keys/hosts + "/${name}.pub";
 
+  opt = type: default: lib.mkOption { inherit type default; };
+  roles = [ "git" "mail" "lists" ];
+
   identityOptions = { name, ... }:
     let
       dir = ../keys/user + "/${name}";
-      sshDir = dir;
       gpgFile = dir + "/gpg.asc";
 
-      sshFiles = lib.optionals (builtins.pathExists sshDir)
-        (lib.filter (lib.hasSuffix ".pub") (lib.attrNames (builtins.readDir sshDir)));
+      sshFiles = lib.optionals (builtins.pathExists dir)
+        (lib.filter (lib.hasSuffix ".pub") (lib.attrNames (builtins.readDir dir)));
     in {
-      options = with lib; {
-        email = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-        };
-        gpg = mkOption {
-          type = types.nullOr types.str;
-          default = null;
-        };
-        sshKeys = mkOption {
-          type = types.listOf types.str;
-          default = map (file: lib.fileContents (sshDir + "/${file}")) sshFiles;
-        };
-        gpgKey = mkOption {
-          type = types.nullOr types.path;
-          default = if builtins.pathExists gpgFile then gpgFile else null;
-        };
-        devices = mkOption {
-          type = types.listOf types.str;
-          default = [];
-        };
+      options = with lib.types; {
+        email = opt (nullOr str) null;
+        gpg = opt (nullOr str) null;
+        sshKeys = opt (listOf str) (map (file: lib.fileContents (dir + "/${file}")) sshFiles);
+        gpgKey = opt (nullOr path) (if builtins.pathExists gpgFile then gpgFile else null);
+        devices = opt (listOf str) [];
       };
     };
 
-  hostOptions = with lib; {
-    system = mkOption {
-      type = types.str;
-    };
-    stateVersion = mkOption {
-      type = types.str;
-    };
-    feats = {
-      nixos = mkOption {
-        type = types.listOf types.str;
-        default = [];
-      };
-      home = mkOption {
-        type = types.listOf types.str;
-        default = [];
-      };
-    };
-    users = mkOption {
-      type = types.listOf types.str;
-      default = [];
-    };
-    ipv4 = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
+  hostOptions = with lib.types; {
+    system = lib.mkOption { type = str; };
+    stateVersion = lib.mkOption { type = str; };
+    feats.nixos = opt (listOf str) [];
+    feats.home = opt (listOf str) [];
+    users = opt (listOf str) [];
+    ipv4 = opt (nullOr str) null;
   };
 
-  repoOptions = with lib; {
-    write = mkOption {
-      type = types.listOf types.str;
-      default = [];
-    };
-    read = mkOption {
-      type = types.listOf types.str;
-      default = [];
-    };
-    description = mkOption {
-      type = types.str;
-      default = "";
-    };
-    owner = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
-    mirror = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
-    private = mkOption {
-      type = types.bool;
-      default = false;
-    };
+  repoOptions = with lib.types; {
+    write = opt (listOf str) [];
+    read = opt (listOf str) [];
+    description = opt str "";
+    owner = opt (nullOr str) null;
+    mirror = opt (nullOr str) null;
+    private = opt bool false;
   };
 
-  listOptions = with lib; {
-    description = mkOption {
-      type = types.str;
-      default = "";
-    };
-    owner = mkOption {
-      type = types.nullOr types.str;
-      default = null;
-    };
-    post = mkOption {
-      type = types.enum [ "anyone" "subscribers" "owner" ];
-      default = "subscribers";
-    };
-    subscribe = mkOption {
-      type = types.enum [ "open" "closed" ];
-      default = "open";
-    };
-    private = mkOption {
-      type = types.bool;
-      default = false;
-    };
-  };
-
-  roleDomains = {
-    git = "git";
-    mail = "mail";
-    lists = "lists";
+  listOptions = with lib.types; {
+    description = opt str "";
+    owner = opt (nullOr str) null;
+    post = opt (enum [ "anyone" "subscribers" "owner" ]) "subscribers";
+    subscribe = opt (enum [ "open" "closed" ]) "open";
+    private = opt bool false;
   };
 
   hostNames = name: host:
-    let names = [ name ] ++ map (role: roleDomains.${role}) (lib.filter (role: roleDomains ? ${role}) host.feats.nixos);
+    let names = [ name ] ++ lib.intersectLists roles host.feats.nixos;
     in map (n: "${n}.${config.networking.domain}") names ++ names;
 in {
   options.kore = with lib; {
-    identities = mkOption {
-      type = types.attrsOf (types.submodule identityOptions);
-      default = {};
-    };
-    hosts = mkOption {
-      type = types.attrsOf (types.submodule [{ options = hostOptions; }]);
-      default = {};
-    };
-    currentHost = mkOption {
-      type = types.submodule [{ options = hostOptions; }];
-    };
-    repos = mkOption {
-      type = types.attrsOf (types.submodule [{ options = repoOptions; }]);
-      default = {};
-    };
-    lists = mkOption {
-      type = types.attrsOf (types.submodule [{ options = listOptions; }]);
-      default = {};
-    };
+    identities = opt (types.attrsOf (types.submodule identityOptions)) {};
+    hosts = opt (types.attrsOf (types.submodule { options = hostOptions; })) {};
+    currentHost = mkOption { type = types.submodule { options = hostOptions; }; };
+    repos = opt (types.attrsOf (types.submodule { options = repoOptions; })) {};
+    lists = opt (types.attrsOf (types.submodule { options = listOptions; })) {};
+    requires = opt (types.attrsOf (types.listOf types.str)) {};
 
     admin = mkOption {
       type = types.str;
@@ -163,15 +80,12 @@ in {
 
     domains = mkOption {
       type = types.attrsOf types.str;
-      default = lib.mapAttrs (_: sub: "${sub}.${config.networking.domain}") roleDomains;
+      default = lib.genAttrs roles (role: "${role}.${config.networking.domain}");
       readOnly = true;
     };
 
 
-    impermanence.enable = mkOption {
-      type = types.bool;
-      default = true;
-    };
+    impermanence.enable = opt types.bool true;
   };
 
   config = {
@@ -187,6 +101,10 @@ in {
       assertion = cfg.identities ? ${user};
       message = "kore: ${hostname} has user ${user}, but kore.nix has no identity for it";
     }) cfg.currentHost.users
+    ++ lib.concatLists (lib.mapAttrsToList (feat: deps: map (dep: {
+      assertion = lib.elem dep cfg.currentHost.feats.nixos;
+      message = "kore: ${feat} needs ${dep}, add \"${dep}\" to hosts.${hostname}.feats.nixos in kore.nix";
+    }) deps) cfg.requires)
     ++ lib.concatLists (lib.mapAttrsToList (repo: acl: [{
       assertion = builtins.match "[A-Za-z0-9_][A-Za-z0-9._-]*(/[A-Za-z0-9_][A-Za-z0-9._-]*)*" repo != null
         && !(lib.hasSuffix ".git" repo);

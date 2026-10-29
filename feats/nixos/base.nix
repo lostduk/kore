@@ -50,7 +50,6 @@ in {
     };
 
     settings = {
-      keep-outputs = false;
       keep-derivations = false;
       auto-optimise-store = true;
 
@@ -91,18 +90,13 @@ in {
   networking = {
     inherit (kore) domain;
 
-    useDHCP = lib.mkDefault true;
     enableIPv6 = lib.mkForce false;
 
     firewall = {
       enable = lib.mkForce true;
       allowPing = lib.mkForce false;
-      allowedTCPPorts = [];
-      allowedUDPPorts = [];
     };
   };
-
-  networking.dhcpcd.extraConfig = "nohook resolv.conf";
 
   services = {
     resolved = {

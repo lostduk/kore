@@ -12,14 +12,10 @@ let
     name = "vesktop";
     runtimeInputs = with pkgs; [ bubblewrap xdg-dbus-proxy coreutils util-linux ];
     text = ''
+      ${outputs.jail}
+      jail_lock vesktop
+
       run="$XDG_RUNTIME_DIR"
-
-      exec 9> "$run/vesktop.lock"
-      if ! flock -n 9; then
-        echo "vesktop is already running" >&2
-        exit 0
-      fi
-
       bus="$(mktemp -u "$run/vesktop-bus.XXXXXX")"
 
       xdg-dbus-proxy "$DBUS_SESSION_BUS_ADDRESS" "$bus" --filter \
@@ -34,30 +30,15 @@ let
 
       mkdir -p "${configDir}" "${downloads}"
 
-      ${outputs.jail}
       jail=()
+      jail_base
       jail_hardware "${configDir}/machine-id"
 
       bwrap \
-        --unshare-all --share-net \
-        --die-with-parent --new-session \
-        --ro-bind /nix/store /nix/store \
-        --ro-bind /etc /etc \
-        --ro-bind /run/current-system /run/current-system \
-        --ro-bind /run/opengl-driver /run/opengl-driver \
-        --ro-bind-try /run/systemd/resolve /run/systemd/resolve \
         "''${jail[@]}" \
-        --proc /proc \
-        --dev /dev \
-        --dev-bind /dev/dri /dev/dri \
-        --tmpfs /tmp \
         --tmpfs /home \
         --bind "${configDir}" "${configDir}" \
         --bind "${downloads}" "${downloads}" \
-        --tmpfs "$run" \
-        --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY" \
-        --ro-bind "$run/pipewire-0" "$run/pipewire-0" \
-        --ro-bind "$run/pulse/native" "$run/pulse/native" \
         --bind "$bus" "$run/bus" \
         --setenv DBUS_SESSION_BUS_ADDRESS "unix:path=$run/bus" \
         ${lib.getExe vesktop} --ozone-platform-hint=auto "$@"

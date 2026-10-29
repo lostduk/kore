@@ -1,4 +1,4 @@
-{ inputs, pkgs, modulesPath, ... }:
+{ inputs, lib, pkgs, modulesPath, ... }:
 
 {
   imports = [
@@ -83,22 +83,10 @@
             content = {
               type = "btrfs";
               extraArgs = [ "-f" ];
-              subvolumes = let
-                options = [ "compress=zstd" "noatime" "ssd" "discard=async" ];
-              in {
-                "/@" = {
-                  mountpoint = "/";
-                  mountOptions = options;
-                };
-                "/@nix" = {
-                  mountpoint = "/nix";
-                  mountOptions = options;
-                };
-                "/@persist" = {
-                  mountpoint = "/persist";
-                  mountOptions = options;
-                };
-              };
+              subvolumes = lib.mapAttrs (_: mountpoint: {
+                inherit mountpoint;
+                mountOptions = [ "compress=zstd" "noatime" "ssd" "discard=async" ];
+              }) { "/@" = "/"; "/@nix" = "/nix"; "/@persist" = "/persist"; };
             };
           };
         };

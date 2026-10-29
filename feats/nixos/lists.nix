@@ -1,48 +1,24 @@
-{ inputs, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   inherit (config.kore) admin identities lists;
   fqdn = config.kore.domains.lists;
   root = "/srv/lists";
 
-  pollen = pkgs.stdenv.mkDerivation {
-    pname = "pollen";
-    version = "0-${inputs.greenhouse.shortRev or "dirty"}";
-
-    src = "${inputs.greenhouse}/pollen";
-
-    postPatch = ''
-      cp config.def.h config.h
-      substituteInPlace config.h \
-        --replace-fail '"/srv/lists"' '"${root}"' \
-        --replace-fail '"lists.lostduk.com"' '"${fqdn}"' \
-        --replace-fail '"https://lists.lostduk.com/"' '"https://${fqdn}/"' \
-        --replace-fail '"/usr/sbin/sendmail"' '"/run/wrappers/bin/sendmail"'
-    '';
-
-    makeFlags = [
-      "PREFIX=$(out)"
-      "CC=${pkgs.stdenv.cc.targetPrefix}cc"
-    ];
+  pollen = pkgs.greenhouse "pollen" {
+    replace = {
+      "/srv/lists" = root;
+      "lists.lostduk.com" = fqdn;
+      "https://lists.lostduk.com/" = "https://${fqdn}/";
+      "/usr/sbin/sendmail" = "/run/wrappers/bin/sendmail";
+    };
   };
 
-  herbarium = pkgs.stdenv.mkDerivation {
-    pname = "herbarium";
-    version = "0-${inputs.greenhouse.shortRev or "dirty"}";
-
-    src = "${inputs.greenhouse}/herbarium";
-
-    postPatch = ''
-      cp config.def.h config.h
-      substituteInPlace config.h \
-        --replace-fail '"/srv/lists"' '"${root}"' \
-        --replace-fail '"lists.lostduk.com"' '"${fqdn}"'
-    '';
-
-    makeFlags = [
-      "PREFIX=$(out)"
-      "CC=${pkgs.stdenv.cc.targetPrefix}cc"
-    ];
+  herbarium = pkgs.greenhouse "herbarium" {
+    replace = {
+      "/srv/lists" = root;
+      "lists.lostduk.com" = fqdn;
+    };
   };
 
   herbariumCgi = pkgs.writeShellScript "herbarium-cgi" ''
@@ -58,13 +34,7 @@ let
 
   transportMap = pkgs.writeText "kore-lists-transport" "${fqdn} pollen:\n";
 in {
-  assertions = [{
-    assertion = lib.elem "mail" config.kore.currentHost.feats.nixos;
-    message = "kore: the lists feat needs the mail feat";
-  } {
-    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
-    message = "kore: the lists feat needs the nginx feat for herbarium";
-  }];
+  kore.requires.lists = [ "mail" "nginx" ];
 
   users.groups.pollen = {};
   users.users.pollen = {
@@ -111,30 +81,6 @@ in {
     process.prefork = 3;
     socket.user = config.services.nginx.user;
     socket.group = config.services.nginx.group;
-  };
-
-  systemd.services.fcgiwrap-herbarium.serviceConfig = {
-    CapabilityBoundingSet = "";
-    IPAddressDeny = "any";
-    LockPersonality = true;
-    NoNewPrivileges = true;
-    PrivateDevices = true;
-    PrivateTmp = true;
-    ProtectClock = true;
-    ProtectControlGroups = true;
-    ProtectHome = true;
-    ProtectHostname = true;
-    ProtectKernelLogs = true;
-    ProtectKernelModules = true;
-    ProtectKernelTunables = true;
-    ProtectProc = "invisible";
-    ProtectSystem = "strict";
-    RestrictAddressFamilies = [ "AF_UNIX" ];
-    RestrictNamespaces = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
-    SystemCallArchitectures = "native";
-    SystemCallFilter = [ "@system-service" "~@privileged" ];
   };
 
   services.nginx.virtualHosts.${fqdn} = {

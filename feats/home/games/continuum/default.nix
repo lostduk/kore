@@ -55,14 +55,10 @@ let
     runtimeInputs = with pkgs; [ bubblewrap coreutils diffutils jq util-linux ];
     excludeShellChecks = [ "SC2016" ];
     text = ''
-      run="$XDG_RUNTIME_DIR"
-      x="/tmp/.X11-unix/X''${DISPLAY#:}"
+      ${outputs.jail}
+      jail_lock continuum
 
-      exec 9> "$run/continuum.lock"
-      if ! flock -n 9; then
-        echo "continuum is already running" >&2
-        exit 0
-      fi
+      x="/tmp/.X11-unix/X''${DISPLAY#:}"
 
       launcher="${dataDir}/.local/share/continuum-launcher"
       bin="${dataDir}/.local/share/volt/volt-linux"
@@ -104,32 +100,17 @@ let
 
       launcher="$HOME/.local/share/continuum-launcher"
 
-      ${outputs.jail}
       jail=()
+      jail_base
       jail_hardware "${dataDir}/.machine-id"
 
       exec bwrap \
-        --unshare-all --share-net \
-        --die-with-parent --new-session \
-        --ro-bind /nix/store /nix/store \
-        --ro-bind /etc /etc \
-        --ro-bind /run/current-system /run/current-system \
-        --ro-bind /run/opengl-driver /run/opengl-driver \
-        --ro-bind-try /run/systemd/resolve /run/systemd/resolve \
         "''${jail[@]}" \
-        --proc /proc \
-        --dev /dev \
         --tmpfs /dev/shm \
-        --dev-bind /dev/dri /dev/dri \
-        --tmpfs /tmp \
         --ro-bind "$x" "$x" \
         --ro-bind ${pkgs.glibc}/lib/ld-linux-x86-64.so.2 /lib64/ld-linux-x86-64.so.2 \
         --ro-bind ${pkgs.pkgsi686Linux.glibc}/lib/ld-linux.so.2 /lib/ld-linux.so.2 \
         --bind "${dataDir}" "$HOME" \
-        --tmpfs "$run" \
-        --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY" \
-        --ro-bind "$run/pipewire-0" "$run/pipewire-0" \
-        --ro-bind "$run/pulse/native" "$run/pulse/native" \
         --unsetenv DBUS_SESSION_BUS_ADDRESS \
         --unsetenv SSH_AUTH_SOCK \
         --unsetenv GPG_AGENT_INFO \

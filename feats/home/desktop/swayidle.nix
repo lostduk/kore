@@ -18,7 +18,7 @@ in {
 
     events = {
       before-sleep = lock;
-      lock = lock;
+      inherit lock;
     };
   };
 }

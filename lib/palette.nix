@@ -1,4 +1,4 @@
-{
+let
   colors = {
     bg = "#181b1c";
     bgAlt = "#1f2627";
@@ -14,6 +14,9 @@
     blue = "#86a2ac";
     magenta = "#abc3b4";
   };
+in {
+  inherit colors;
+  hex = builtins.mapAttrs (_: c: builtins.substring 1 6 c) colors;
 
   ramp = {
     hedge = "#162920";

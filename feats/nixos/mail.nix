@@ -35,10 +35,9 @@ let
     }
   '';
 in {
+  kore.requires.mail = [ "nginx" ];
+
   assertions = [{
-    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
-    message = "kore: the mail feat needs the nginx feat for ACME";
-  } {
     assertion = mailboxes ? ${admin};
     message = "kore: mail admin ${admin} needs an email @${domain}";
   }] ++ lib.concatMap (name: map (device: {

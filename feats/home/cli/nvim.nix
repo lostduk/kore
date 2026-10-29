@@ -18,16 +18,11 @@
 
       "" Options
       " General
-      set mouse="!"
-      set magic
-      set hidden
+      set mouse=
       set notimeout
-      set autoindent
-      set encoding=utf-8
       set clipboard=unnamedplus
 
       " File
-      set autoread
       set noswapfile
       set undofile
 

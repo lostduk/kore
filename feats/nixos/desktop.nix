@@ -1,7 +1,7 @@
 { lib, pkgs, outputs, ... }:
 
 let
-  c = lib.mapAttrs (_: lib.removePrefix "#") outputs.palette.colors;
+  c = outputs.palette.hex;
 
   garden-status = pkgs.writeShellApplication {
     name = "garden-status";
@@ -45,14 +45,8 @@ in {
   '';
 
   xdg = {
-    autostart.enable = true;
-    icons.enable = true;
-    mime.enable = true;
-    sounds.enable = true;
-
     portal = {
       enable = true;
-      extraPortals = [ pkgs.xdg-desktop-portal-wlr ];
       configPackages = [ pkgs.xdg-desktop-portal-gtk pkgs.xdg-desktop-portal-wlr ];
 
       wlr = {
@@ -103,14 +97,8 @@ in {
 
     pipewire = {
       enable = true;
-
       alsa.enable = true;
-      alsa.support32Bit = false;
-
       pulse.enable = true;
-      jack.enable = false;
-
-      wireplumber.enable = true;
     };
   };
 }

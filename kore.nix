@@ -17,7 +17,6 @@
       ipv4 = "82.153.138.53";
       feats = {
         nixos = [ "nginx" "sites" "git" "mail" "lists" ];
-        home = [ ];
       };
     };
 
@@ -25,7 +24,6 @@
       system = "x86_64-linux";
       stateVersion = "26.11";
       users = [ "lostduk" ];
-      ipv4 = null;
       feats = {
         nixos = [ "desktop" ];
         home = [

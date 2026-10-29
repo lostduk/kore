@@ -1,4 +1,4 @@
-{ inputs, config, modulesPath, ... }:
+{ inputs, config, lib, modulesPath, ... }:
 
 let
   gateway = "100.213.253.237";
@@ -60,22 +60,10 @@ in {
           content = {
             type = "btrfs";
             extraArgs = [ "-f" ];
-            subvolumes = let
-              options = [ "compress=zstd" "noatime" ];
-            in {
-              "/@" = {
-                mountpoint = "/";
-                mountOptions = options;
-              };
-              "/@nix" = {
-                mountpoint = "/nix";
-                mountOptions = options;
-              };
-              "/@persist" = {
-                mountpoint = "/persist";
-                mountOptions = options;
-              };
-            };
+            subvolumes = lib.mapAttrs (_: mountpoint: {
+              inherit mountpoint;
+              mountOptions = [ "compress=zstd" "noatime" ];
+            }) { "/@" = "/"; "/@nix" = "/nix"; "/@persist" = "/persist"; };
           };
         };
       };

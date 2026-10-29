@@ -1,21 +1,13 @@
-{ inputs, config, lib, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 let
   inherit (config.kore) identities repos;
   inherit (config.networking) domain;
   root = "/srv/git";
 
-  petal = pkgs.stdenv.mkDerivation {
-    pname = "petal";
-    version = "0-${inputs.greenhouse.shortRev or "dirty"}";
-
-    src = "${inputs.greenhouse}/petal";
-
+  petal = pkgs.greenhouse "petal" {
     buildInputs = [ pkgs.libgit2 ];
-
     makeFlags = [
-      "PREFIX=$(out)"
-      "CC=${pkgs.stdenv.cc.targetPrefix}cc"
       "GIT2INC=${lib.getDev pkgs.libgit2}/include"
       "GIT2LIB=${lib.getLib pkgs.libgit2}/lib"
     ];
@@ -62,24 +54,12 @@ let
     ++ map (id: "${repo} read ${id}") access.read
   ) repos)));
 
-  hedge = pkgs.stdenv.mkDerivation {
-    pname = "hedge";
-    version = "0-${inputs.greenhouse.shortRev or "dirty"}";
-
-    src = "${inputs.greenhouse}/hedge";
-
-    postPatch = ''
-      cp config.def.h config.h
-      substituteInPlace config.h \
-        --replace-fail '"/srv/git"' '"${root}"' \
-        --replace-fail '"/etc/hedge/acl"' '"${acl}"' \
-        --replace-fail '"git-shell"' '"${pkgs.git}/bin/git-shell"'
-    '';
-
-    makeFlags = [
-      "PREFIX=$(out)"
-      "CC=${pkgs.stdenv.cc.targetPrefix}cc"
-    ];
+  hedge = pkgs.greenhouse "hedge" {
+    replace = {
+      "/srv/git" = root;
+      "/etc/hedge/acl" = "${acl}";
+      "git-shell" = "${pkgs.git}/bin/git-shell";
+    };
   };
 
   petalCgi = pkgs.writeShellScript "petal-cgi" ''
@@ -89,10 +69,7 @@ let
 
   members = lib.unique (lib.concatLists (lib.mapAttrsToList (_: access: access.write ++ access.read) repos));
 in {
-  assertions = [{
-    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
-    message = "kore: the git role needs the nginx role for petal";
-  }];
+  kore.requires.git = [ "nginx" ];
 
   users.groups.git = {};
   users.users.git = {
@@ -155,30 +132,6 @@ in {
     process.prefork = 3;
     socket.user = config.services.nginx.user;
     socket.group = config.services.nginx.group;
-  };
-
-  systemd.services.fcgiwrap-petal.serviceConfig = {
-    CapabilityBoundingSet = "";
-    IPAddressDeny = "any";
-    LockPersonality = true;
-    NoNewPrivileges = true;
-    PrivateDevices = true;
-    PrivateTmp = true;
-    ProtectClock = true;
-    ProtectControlGroups = true;
-    ProtectHome = true;
-    ProtectHostname = true;
-    ProtectKernelLogs = true;
-    ProtectKernelModules = true;
-    ProtectKernelTunables = true;
-    ProtectProc = "invisible";
-    ProtectSystem = "strict";
-    RestrictAddressFamilies = [ "AF_UNIX" ];
-    RestrictNamespaces = true;
-    RestrictRealtime = true;
-    RestrictSUIDSGID = true;
-    SystemCallArchitectures = "native";
-    SystemCallFilter = [ "@system-service" "~@privileged" ];
   };
 
   services.nginx.virtualHosts.${config.kore.domains.git} = {

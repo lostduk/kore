@@ -24,10 +24,7 @@ let
     '';
   };
 in {
-  assertions = [{
-    assertion = lib.elem "nginx" config.kore.currentHost.feats.nixos;
-    message = "kore: the sites role needs the nginx role";
-  }];
+  kore.requires.sites = [ "nginx" ];
 
   services.nginx.virtualHosts = lib.genAttrs domains (domain: {
     enableACME = true;

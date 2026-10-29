@@ -1,4 +1,33 @@
 ''
+  jail_lock() {
+    exec 9> "$XDG_RUNTIME_DIR/$1.lock"
+    if ! flock -n 9; then
+      echo "$1 is already running" >&2
+      exit 0
+    fi
+  }
+
+  jail_base() {
+    local run="$XDG_RUNTIME_DIR"
+    jail+=(
+      --unshare-all --share-net
+      --die-with-parent --new-session
+      --ro-bind /nix/store /nix/store
+      --ro-bind /etc /etc
+      --ro-bind /run/current-system /run/current-system
+      --ro-bind /run/opengl-driver /run/opengl-driver
+      --ro-bind-try /run/systemd/resolve /run/systemd/resolve
+      --proc /proc
+      --dev /dev
+      --dev-bind /dev/dri /dev/dri
+      --tmpfs /tmp
+      --tmpfs "$run"
+      --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY"
+      --ro-bind "$run/pipewire-0" "$run/pipewire-0"
+      --ro-bind "$run/pulse/native" "$run/pulse/native"
+    )
+  }
+
   jail_hardware() {
     local id="$1" dev link gpu=""
 

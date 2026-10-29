@@ -1,4 +1,4 @@
-{ config, ... }:
+{ config, lib, ... }:
 
 let
   inherit (config.kore) admin;
@@ -26,6 +26,32 @@ in {
       extraConfig = "return 444;";
     };
   };
+
+  systemd.services = lib.mapAttrs' (name: _: lib.nameValuePair "fcgiwrap-${name}" {
+    serviceConfig = {
+      CapabilityBoundingSet = "";
+      IPAddressDeny = "any";
+      LockPersonality = true;
+      NoNewPrivileges = true;
+      PrivateDevices = true;
+      PrivateTmp = true;
+      ProtectClock = true;
+      ProtectControlGroups = true;
+      ProtectHome = true;
+      ProtectHostname = true;
+      ProtectKernelLogs = true;
+      ProtectKernelModules = true;
+      ProtectKernelTunables = true;
+      ProtectProc = "invisible";
+      ProtectSystem = "strict";
+      RestrictAddressFamilies = [ "AF_UNIX" ];
+      RestrictNamespaces = true;
+      RestrictRealtime = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+      SystemCallFilter = [ "@system-service" "~@privileged" ];
+    };
+  }) config.services.fcgiwrap.instances;
 
   networking.firewall.allowedTCPPorts = [ 80 443 ];
   environment.persistence."/persist".directories = [ "/var/lib/acme" ];
