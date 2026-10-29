@@ -39,7 +39,7 @@
   repos = {
     kore = {
       write = [ "lostduk" ];
-      description = "my public infrastructure monorepo";
+      description = "nixos infrastructure";
       mirror = "git@github.com:lostduk/kore.git";
     };
     greenhouse = {
@@ -48,11 +48,11 @@
     };
     sites = {
       write = [ "lostduk" ];
-      description = "websites";
+      description = "static websites";
     };
     mii = {
       write = [ "lostduk" ];
-      description = "IMAP mailbox as files";
+      description = "imap mailbox as files";
     };
     lmc = {
       write = [ "lostduk" ];
