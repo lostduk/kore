@@ -25,7 +25,7 @@
     let
       inherit (self) outputs;
       inherit (nixpkgs) lib;
-      kore = lib.importJSON ./kore.json;
+      kore = import ./kore.nix;
       palette = import ./lib/palette.nix;
       jail = import ./lib/jail.nix;
 

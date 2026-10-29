@@ -185,7 +185,7 @@ in {
 
     assertions = map (user: {
       assertion = cfg.identities ? ${user};
-      message = "kore: ${hostname} has user ${user}, but kore.json has no identity for it";
+      message = "kore: ${hostname} has user ${user}, but kore.nix has no identity for it";
     }) cfg.currentHost.users
     ++ lib.concatLists (lib.mapAttrsToList (repo: acl: [{
       assertion = builtins.match "[A-Za-z0-9_][A-Za-z0-9._-]*(/[A-Za-z0-9_][A-Za-z0-9._-]*)*" repo != null
@@ -193,14 +193,14 @@ in {
       message = "kore: repo name ${repo} is invalid";
     }] ++ map (id: {
       assertion = cfg.identities ? ${id};
-      message = "kore: repo ${repo} lists ${id}, but kore.json has no identity for it";
+      message = "kore: repo ${repo} lists ${id}, but kore.nix has no identity for it";
     }) (acl.write ++ acl.read ++ lib.optional (acl.owner != null) acl.owner)) cfg.repos)
     ++ lib.concatLists (lib.mapAttrsToList (list: opts: [{
       assertion = builtins.match "[a-z0-9][a-z0-9-]*" list != null && lib.stringLength list <= 64;
       message = "kore: list name ${list} is invalid";
     }] ++ lib.optional (opts.owner != null) {
       assertion = (cfg.identities.${opts.owner}.email or null) != null;
-      message = "kore: list ${list} is owned by ${opts.owner}, but kore.json has no identity with an email for it";
+      message = "kore: list ${list} is owned by ${opts.owner}, but kore.nix has no identity with an email for it";
     }) cfg.lists);
 
     nixpkgs.hostPlatform = cfg.currentHost.system;
