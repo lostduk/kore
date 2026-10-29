@@ -209,6 +209,7 @@ in {
           { _section.name = "Sent"; special_use = "\\Sent"; auto = "subscribe"; }
           { _section.name = "Junk"; special_use = "\\Junk"; auto = "subscribe"; }
           { _section.name = "Archive"; special_use = "\\Archive"; auto = "subscribe"; }
+          { _section.name = "Trash"; special_use = "\\Trash"; auto = "subscribe"; }
         ];
       };
 
