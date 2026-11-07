@@ -3,7 +3,24 @@
 let
   inherit (outputs.palette) colors ramp;
 
-  vesktop = pkgs.vesktop.override { withSystemVencord = true; };
+  # TODO: drop once nixos-unstable has vencord >= 1.15.16 (NixOS/nixpkgs#584169)
+  vencord = pkgs.vencord.overrideAttrs (final: prev: {
+    version = "1.15.16";
+    src = pkgs.fetchFromGitHub {
+      owner = "Vendicated";
+      repo = "Vencord";
+      rev = "v${final.version}";
+      hash = "sha256-aUJubLJpyLAZWiOezqFxPY6oVPgWVPQpajFqrJvrO9U=";
+    };
+    patches = [ ];
+    postPatch = "";
+    pnpmDeps = prev.pnpmDeps.overrideAttrs {
+      inherit (final) src patches postPatch;
+      outputHash = "sha256-HS8uZNepvDefjrsG3buVLFCVv7sHvazcwdpcT3EQ/78=";
+    };
+  });
+
+  vesktop = pkgs.vesktop.override { withSystemVencord = true; inherit vencord; };
 
   configDir = "${config.xdg.configHome}/vesktop";
   downloads = config.xdg.userDirs.download;
