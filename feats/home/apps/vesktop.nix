@@ -27,7 +27,7 @@ let
 
   jail = pkgs.writeShellApplication {
     name = "vesktop";
-    runtimeInputs = with pkgs; [ bubblewrap xdg-dbus-proxy coreutils util-linux ];
+    runtimeInputs = with pkgs; [ bubblewrap xdg-dbus-proxy coreutils util-linux kore-wlsec ];
     text = ''
       ${outputs.jail}
       jail_lock vesktop
@@ -51,7 +51,7 @@ let
       jail_base
       jail_hardware "${configDir}/machine-id"
 
-      bwrap \
+      kore-wlsec "$jail_wl" vesktop bwrap \
         "''${jail[@]}" \
         --tmpfs /home \
         --bind "${configDir}" "${configDir}" \

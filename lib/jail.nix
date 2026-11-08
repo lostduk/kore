@@ -1,5 +1,6 @@
 ''
   jail_lock() {
+    jail_wl="$XDG_RUNTIME_DIR/kore-$1.wayland"
     exec 9> "$XDG_RUNTIME_DIR/$1.lock"
     if ! flock -n 9; then
       echo "$1 is already running" >&2
@@ -22,21 +23,26 @@
       --dev-bind /dev/dri /dev/dri
       --tmpfs /tmp
       --tmpfs "$run"
-      --ro-bind "$run/$WAYLAND_DISPLAY" "$run/$WAYLAND_DISPLAY"
+      --ro-bind "$jail_wl" "$run/$WAYLAND_DISPLAY"
       --ro-bind "$run/pipewire-0" "$run/pipewire-0"
       --ro-bind "$run/pulse/native" "$run/pulse/native"
     )
   }
 
   jail_hardware() {
-    local id="$1" dev link gpu=""
+    local id="$1" mid="" dev link gpu=""
 
-    if [ ! -s "$id" ]; then
-      mkdir -p "$(dirname "$id")"
-      head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n' > "$id"
-      echo >> "$id"
+    if [ -f "$id" ] && [ ! -L "$id" ]; then
+      mid="$(head -c 32 -- "$id")"
     fi
-    jail+=(--ro-bind "$id" /etc/machine-id)
+    if ! [[ $mid =~ ^[0-9a-f]{32}$ ]]; then
+      mid="$(head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \n')"
+      mkdir -p "$(dirname "$id")"
+      rm -f -- "$id"
+      printf '%s\n' "$mid" > "$id"
+    fi
+    exec 8<<< "$mid"
+    jail+=(--ro-bind-data 8 /etc/machine-id)
 
     jail+=(--dir /sys --ro-bind /sys/devices/system/cpu /sys/devices/system/cpu)
     [ -d /sys/devices/system/node ] && jail+=(--ro-bind /sys/devices/system/node /sys/devices/system/node)

@@ -50,18 +50,13 @@ let
     "files/share/xalia"
   ];
 
-  continuum = pkgs.writeShellApplication {
-    name = "continuum";
-    runtimeInputs = with pkgs; [ bubblewrap coreutils diffutils jq util-linux ];
+  prepare = pkgs.writeShellApplication {
+    name = "continuum-prepare";
+    runtimeInputs = with pkgs; [ coreutils diffutils jq ];
     excludeShellChecks = [ "SC2016" ];
     text = ''
-      ${outputs.jail}
-      jail_lock continuum
-
-      x="/tmp/.X11-unix/X''${DISPLAY#:}"
-
-      launcher="${dataDir}/.local/share/continuum-launcher"
-      bin="${dataDir}/.local/share/volt/volt-linux"
+      launcher="$HOME/.local/share/continuum-launcher"
+      bin="$HOME/.local/share/volt/volt-linux"
       mkdir -p "$(dirname "$bin")"
       cmp -s ${volt} "$bin" || install -m755 ${volt} "$bin"
 
@@ -91,12 +86,35 @@ let
         esac
       done
 
-      volt="${dataDir}/.config/volt-linux/client-settings.json"
+      volt="$HOME/.config/volt-linux/client-settings.json"
       if [ -f "$volt" ]; then
+        rm -f "$volt.new"
         jq --slurpfile theme ${./volt-dark.json} '. + $theme[0]' "$volt" > "$volt.new"
         chmod --reference="$volt" "$volt.new"
         mv "$volt.new" "$volt"
       fi
+    '';
+  };
+
+  continuum = pkgs.writeShellApplication {
+    name = "continuum";
+    runtimeInputs = with pkgs; [ bubblewrap coreutils util-linux kore-wlsec ];
+    excludeShellChecks = [ "SC2016" ];
+    text = ''
+      ${outputs.jail}
+      jail_lock continuum
+
+      x="/tmp/.X11-unix/X''${DISPLAY#:}"
+
+      mkdir -p "${dataDir}"
+      bwrap \
+        --unshare-all --die-with-parent --new-session \
+        --ro-bind /nix/store /nix/store \
+        --proc /proc \
+        --dev /dev \
+        --tmpfs /tmp \
+        --bind "${dataDir}" "$HOME" \
+        ${lib.getExe prepare}
 
       launcher="$HOME/.local/share/continuum-launcher"
 
@@ -104,7 +122,7 @@ let
       jail_base
       jail_hardware "${dataDir}/.machine-id"
 
-      exec bwrap \
+      exec kore-wlsec "$jail_wl" continuum bwrap \
         "''${jail[@]}" \
         --tmpfs /dev/shm \
         --ro-bind "$x" "$x" \

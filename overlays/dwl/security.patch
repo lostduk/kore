@@ -1,0 +1,76 @@
+--- a/dwl.c
++++ b/dwl.c
+@@ -57,6 +57,7 @@
+ #include <wlr/types/wlr_screencopy_v1.h>
+ #include <wlr/types/wlr_seat.h>
+ #include <wlr/types/wlr_server_decoration.h>
++#include <wlr/types/wlr_security_context_v1.h>
+ #include <wlr/types/wlr_session_lock_v1.h>
+ #include <wlr/types/wlr_single_pixel_buffer_v1.h>
+ #include <wlr/types/wlr_subcompositor.h>
+@@ -343,6 +344,7 @@
+ static void focusstack(const Arg *arg);
+ static Client *focustop(Monitor *m);
+ static void fullscreennotify(struct wl_listener *listener, void *data);
++static bool globalfilter(const struct wl_client *client, const struct wl_global *global, void *data);
+ static void gpureset(struct wl_listener *listener, void *data);
+ static void handlesig(int signo);
+ static void incnmaster(const Arg *arg);
+@@ -453,6 +455,7 @@
+ static struct wlr_xcursor_manager *cursor_mgr;
+ 
+ static struct wlr_scene_rect *root_bg;
++static struct wlr_security_context_manager_v1 *security_context_mgr;
+ static struct wlr_session_lock_manager_v1 *session_lock_mgr;
+ static struct wlr_scene_rect *locked_bg;
+ static struct wlr_session_lock_v1 *cur_lock;
+@@ -1894,6 +1897,40 @@
+ 	setfullscreen(c, client_wants_fullscreen(c));
+ }
+ 
++bool
++globalfilter(const struct wl_client *client, const struct wl_global *global, void *data)
++{
++	static const char *const hidden[] = {
++		"ext_data_control_manager_v1",
++		"ext_foreign_toplevel_image_capture_source_manager_v1",
++		"ext_foreign_toplevel_list_v1",
++		"ext_image_copy_capture_manager_v1",
++		"ext_output_image_capture_source_manager_v1",
++		"ext_session_lock_manager_v1",
++		"wp_security_context_manager_v1",
++		"zwlr_data_control_manager_v1",
++		"zwlr_export_dmabuf_manager_v1",
++		"zwlr_gamma_control_manager_v1",
++		"zwlr_layer_shell_v1",
++		"zwlr_output_manager_v1",
++		"zwlr_output_power_manager_v1",
++		"zwlr_screencopy_manager_v1",
++		"zwlr_virtual_pointer_manager_v1",
++		"zwp_input_method_manager_v2",
++		"zwp_virtual_keyboard_manager_v1",
++	};
++	const char *name;
++	size_t i;
++
++	if (!wlr_security_context_manager_v1_lookup_client(security_context_mgr, client))
++		return true;
++	name = wl_global_get_interface(global)->name;
++	for (i = 0; i < LENGTH(hidden); i++)
++		if (!strcmp(name, hidden[i]))
++			return false;
++	return true;
++}
++
+ void
+ gpureset(struct wl_listener *listener, void *data)
+ {
+@@ -2823,6 +2860,8 @@
+ 	 * clients from the Unix socket, managing Wayland globals, and so on. */
+ 	dpy = wl_display_create();
+ 	event_loop = wl_display_get_event_loop(dpy);
++	security_context_mgr = wlr_security_context_manager_v1_create(dpy);
++	wl_display_set_global_filter(dpy, globalfilter, NULL);
+ 
+ 	/* The backend is a wlroots feature which abstracts the underlying input and
+ 	 * output hardware. The autocreate option will choose the most suitable

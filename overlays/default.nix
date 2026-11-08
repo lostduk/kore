@@ -62,6 +62,24 @@
       };
     };
 
+  jail = final: prev: {
+    kore-wlsec = final.stdenv.mkDerivation {
+      name = "kore-wlsec";
+      src = ./wlsec;
+      nativeBuildInputs = [ final.pkg-config final.wayland-scanner ];
+      buildInputs = [ final.wayland final.wayland-protocols ];
+      buildPhase = ''
+        xml=$(pkg-config --variable=pkgdatadir wayland-protocols)/staging/security-context/security-context-v1.xml
+        wayland-scanner client-header "$xml" security-context-v1-client-protocol.h
+        wayland-scanner private-code "$xml" security-context-v1-protocol.c
+        $CC -std=c99 -pedantic -Wall -Wextra -Wno-unused-parameter -Werror -Os -D_XOPEN_SOURCE=700 \
+          -o kore-wlsec wlsec.c security-context-v1-protocol.c \
+          $(pkg-config --cflags --libs wayland-client)
+      '';
+      installPhase = "install -Dm755 kore-wlsec $out/bin/kore-wlsec";
+    };
+  };
+
   modifications = final: prev: {
     dwl =
       let
@@ -82,6 +100,7 @@
             ./dwl/bar.patch
             ./dwl/gaps.patch
             ./dwl/garden.patch
+            ./dwl/security.patch
           ];
           buildInputs = old.buildInputs ++ [ final.fcft final.pixman final.libdrm ];
         });
