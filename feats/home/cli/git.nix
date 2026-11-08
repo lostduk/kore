@@ -6,12 +6,6 @@ in {
   programs.git = {
     enable = true;
 
-    ignores = [
-      "CLAUDE.md"
-      ".claude/"
-      "**/.claude/settings.local.json"
-    ];
-
     settings = {
       user = {
         name = config.home.username;
