@@ -30,5 +30,6 @@ in {
     enableACME = true;
     forceSSL = true;
     root = "${sites}/${domain}";
+    locations."/".tryFiles = "$uri $uri.html $uri/ =404";
   });
 }
