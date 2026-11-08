@@ -27,7 +27,7 @@
       feats = {
         nixos = [ "desktop" ];
         home = [
-          "cli/gpg" "cli/ssh" "cli/git" "cli/nvim" "cli/bash" "cli/tmux" "cli/aerc"
+          "cli/gpg" "cli/ssh" "cli/git" "cli/nvim" "cli/bash" "cli/tmux" "cli/mail"
           "desktop/xdg" "apps/firefox" "apps/vesktop" "games/continuum" "desktop/gtk"
           "desktop/dwl" "desktop/foot" "desktop/wbg" "desktop/mako" "desktop/swaylock" "desktop/swayidle"
           "secrets"

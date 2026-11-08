@@ -23,6 +23,45 @@
     });
   };
 
+  mail = final: prev:
+    let
+      inherit (final) lib;
+
+      build = name: attrs: final.stdenv.mkDerivation (removeAttrs attrs [ "makeFlags" ] // {
+        pname = name;
+        version = "0-${inputs.${name}.shortRev or "dirty"}";
+        src = inputs.${name};
+        makeFlags = [
+          "PREFIX=$(out)"
+          "CC=${final.stdenv.cc.targetPrefix}cc"
+        ] ++ attrs.makeFlags or [];
+      });
+
+      set = name: value:
+        assert lib.assertMsg (builtins.match "[^#&\"\\\\]*" value != null)
+          "lmc: ${name} must not contain # & \" or \\";
+        ''
+          pat='^\(.*\(\[${name}\]\|\*${name}\|[[:blank:]]${name}\[\]\)[[:blank:]]*=[[:blank:]]*\)"[^"]*"'
+          grep -q "$pat" config.h || { echo "lmc: config.h has no setting ${name}" >&2; exit 1; }
+          sed -i "s#$pat#\1\"${value}\"#" config.h
+          grep "$pat" config.h | grep -qF '"${value}"' || { echo "lmc: failed to set ${name}" >&2; exit 1; }
+        '';
+    in {
+      mii = build "mii" {
+        buildInputs = [ final.libretls ];
+        makeFlags = [
+          "TLSINC=${lib.getDev final.libretls}/include"
+          "TLSLIB=${lib.getLib final.libretls}/lib"
+        ];
+      };
+
+      lmc = settings: build "lmc" {
+        postPatch = ''
+          cp config.def.h config.h
+        '' + lib.concatStrings (lib.mapAttrsToList set settings);
+      };
+    };
+
   modifications = final: prev: {
     dwl =
       let

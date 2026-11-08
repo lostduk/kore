@@ -19,6 +19,12 @@
 
     sites.url = "git+https://git.lostduk.com/sites.git";
     sites.flake = false;
+
+    lmc.url = "git+https://git.lostduk.com/lmc.git";
+    lmc.flake = false;
+
+    mii.url = "git+https://git.lostduk.com/mii.git";
+    mii.flake = false;
   };
 
   outputs = inputs@{ self, nixpkgs, ... }:

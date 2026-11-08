@@ -96,6 +96,38 @@
         "type": "github"
       }
     },
+    "lmc": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794123325,
+        "narHash": "sha256-7U+LUQYlt6gG/DyHOcnzSB3+oog0jPs7LYm3PFAtiDU=",
+        "ref": "refs/heads/main",
+        "rev": "5b00559154da934242f78f3f95475c3f1859d3d9",
+        "revCount": 10,
+        "type": "git",
+        "url": "https://git.lostduk.com/lmc.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.lostduk.com/lmc.git"
+      }
+    },
+    "mii": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1794125841,
+        "narHash": "sha256-csMxqCz/JbmspmGEOEIgDTfbPJfzMv/y//Eo8Y5b5BM=",
+        "ref": "refs/heads/main",
+        "rev": "0f707c830839ba49793587283d423ec8fcd820d5",
+        "revCount": 5,
+        "type": "git",
+        "url": "https://git.lostduk.com/mii.git"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://git.lostduk.com/mii.git"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1768564909,
@@ -134,6 +166,8 @@
         "greenhouse": "greenhouse",
         "home-manager": "home-manager",
         "impermanence": "impermanence",
+        "lmc": "lmc",
+        "mii": "mii",
         "nixpkgs": "nixpkgs_2",
         "sites": "sites",
         "sops-nix": "sops-nix"
