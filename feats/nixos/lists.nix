@@ -129,5 +129,14 @@ in {
         }
       }
     }
+    list-posts {
+      priority = low;
+      header = {
+        "List-Post" = "/./";
+      }
+      apply {
+        symbols_disabled = [ "DKIM_SIGNED" ];
+      }
+    }
   '';
 }
